@@ -1,4 +1,4 @@
-import { usuarios as UserModel } from 'generated/prisma/browser';
+import { usuarios as UserModel } from 'generated/prisma';
 import { Role } from '../../config/constants';
 
 // Esta interfaz se usa para tipar el objeto 'usuario' en la aplicación

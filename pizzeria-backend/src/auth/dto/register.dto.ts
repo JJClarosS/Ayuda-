@@ -1,16 +1,24 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional } from 'class-validator';
-import { LoginDto } from './login.dto';
+// src/auth/dto/register.dto.ts
+import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 
-export class RegisterDto extends LoginDto {
-  @IsString()
+export class RegisterDto {
   @IsNotEmpty()
   nombre: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   apellido: string;
 
-  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @MinLength(6)
+  password: string;
+
   @IsOptional()
   telefono?: string;
+
+  @IsOptional()
+  id_rol?: number; // opcional: rol (si admin registra usuarios)
 }
+  

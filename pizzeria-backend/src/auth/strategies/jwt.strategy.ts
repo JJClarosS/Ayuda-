@@ -1,29 +1,45 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
+// src/auth/strategies/jwt.strategy.ts
 import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConstants } from '../../config/constants';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
-import { UsersService } from '../../users/users.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly usersService: UsersService) {
+  constructor(private prisma: PrismaService) {
     super({
-      // Extrae el JWT del header 'Authorization: Bearer <token>'
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret, // Clave secreta para verificar la firma
+      secretOrKey: jwtConstants.secret,
     });
   }
 
-  // Se ejecuta después de verificar la firma del token
-  async validate(payload: JwtPayload) {
-    // Aquí podrías buscar el usuario completo en la BD si fuera necesario,
-    // pero por ahora solo retornamos el payload para inyectarlo en la Request.
-    return { 
-        id_usuario: payload.sub, 
-        email: payload.email, 
-        rol: payload.rol 
-    };
+  async validate(payload: { sub: number; email: string; role: string | null }) {
+  const user = await this.prisma.usuarios.findUnique({
+    where: { id_usuario: payload.sub },
+    select: {
+      id_usuario: true,
+      email: true,
+      nombre: true,
+      apellido: true,
+      telefono: true,
+      activo: true,
+      roles: { select: { nombre_rol: true } },
+    },
+  });
+
+  if (!user || !user.activo) {
+    return null;
   }
+
+  return {
+    sub: user.id_usuario,
+    email: user.email,
+    nombre: user.nombre,
+    apellido: user.apellido,
+    telefono: user.telefono,
+    role: user.roles?.nombre_rol ?? null,
+  };
+}
 }

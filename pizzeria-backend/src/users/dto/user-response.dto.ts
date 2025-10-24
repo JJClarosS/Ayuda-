@@ -1,5 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
-import { UserEntity } from '../entities/user.entity';
+import { usuarios as UserModel } from 'generated/prisma';
+import { Role } from '../../config/constants';
 
 /**
  * DTO de respuesta para el usuario.
@@ -39,10 +40,8 @@ export class UserResponseDto {
   @Exclude() // Excluye el hash de la contraseña de la respuesta
   password_hash: string;
   
-  constructor(user: UserEntity) {
-      // Usamos el decorador @Exclude() en la propiedad password_hash en la clase UserEntity
-      // Pero dado que Prisma devuelve un objeto plano, usamos Exclude/Expose
-      Object.assign(this, user);
-      this.roleName = user.roles?.nombre_rol;
+  cconstructor(user: UserModel & { roles?: { nombre_rol: string } | null }) {
+    Object.assign(this, user);
+    this.roleName = user.roles?.nombre_rol ?? 'Desconocido';
   }
 }

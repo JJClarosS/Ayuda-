@@ -1,8 +1,6 @@
-import { Role } from '../../config/constants';
-
+// src/auth/interfaces/jwt-payload.interface.ts
 export interface JwtPayload {
-  id_usuario: number;
+  sub: number; // id_usuario
   email: string;
-  rol: Role;
-  sub: number; 
+  role: string;
 }
