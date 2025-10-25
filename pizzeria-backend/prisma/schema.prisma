@@ -449,14 +449,13 @@ model reservas {
 }
 
 model roles {
-  id_rol         Int        @id(map: "roles_pk") @default(autoincrement())
-  nombre_rol     String     @unique(map: "ak_0") @db.VarChar(50)
-  fecha_creacion DateTime?  @default(now()) @db.Timestamp(6)
+  id_rol         Int          @id(map: "roles_pk") @default(autoincrement())
+  nombre_rol     String       @unique(map: "ak_0") @db.VarChar(50)
+  fecha_creacion DateTime?    @default(now()) @db.Timestamp(6)
   descripcion    String
   activo         Boolean
+  RolPermiso     RolPermiso[]
   usuarios       usuarios[]
-
-  RolPermiso RolPermiso[]
 }
 
 model sesiones_usuario {
@@ -508,16 +507,16 @@ model usuarios {
 
 model Permiso {
   id_permiso     Int          @id @default(autoincrement())
-  nombre_permiso String       @unique @db.VarChar(50) //crear usuario
+  nombre_permiso String       @unique @db.VarChar(50)
   descripcion    String?
   roles          RolPermiso[]
 }
 
 model RolPermiso {
-  id_rol     Int     @map("id_rol") //1,2,3
-  id_permiso Int     @map("id_permiso") //crear usuario
-  rol        roles   @relation(fields: [id_rol], references: [id_rol])
+  id_rol     Int     @map("id_rol")
+  id_permiso Int     @map("id_permiso")
   permiso    Permiso @relation(fields: [id_permiso], references: [id_permiso])
+  rol        roles   @relation(fields: [id_rol], references: [id_rol])
 
   @@id([id_rol, id_permiso])
 }

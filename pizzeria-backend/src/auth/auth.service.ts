@@ -16,8 +16,8 @@ export class AuthService {
     if (existing) throw new ConflictException('Email ya registrado');
 
     const password_hash = await bcrypt.hash(dto.password, 10);
-    // si no envían id_rol, asignar rol por defecto (por ejemplo 2)
-    const id_rol = dto.id_rol ?? 2;
+    // Si no envían id_rol, asignar rol por defecto (por ejemplo, 6 para Cliente)
+    const id_rol = dto.id_rol ?? 6; // Cambiado a 6 (Cliente) en lugar de 2 (Gerente)
     const user = await this.prisma.usuarios.create({
       data: {
         nombre: dto.nombre,
@@ -47,27 +47,38 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.prisma.usuarios.findUnique({ where: { email: loginDto.email }, include: { roles: true } });
+    const user = await this.prisma.usuarios.findUnique({
+      where: { email: loginDto.email },
+      include: { roles: true },
+    });
     if (!user) throw new UnauthorizedException('Credenciales inválidas');
     const match = await bcrypt.compare(loginDto.password, user.password_hash);
     if (!match) throw new UnauthorizedException('Credenciales inválidas');
 
-    const payload = { 
-      sub: user.id_usuario, email: user.email, role: user.roles?.nombre_rol ?? null };
+    const payload = {
+      sub: user.id_usuario,
+      email: user.email,
+      id_rol: user.id_rol, // Añadir id_rol al payload
+      role: user.roles?.nombre_rol ?? null,
+    };
 
-    // registrar sesión
+    // Registrar sesión
     const session = await this.prisma.sesiones_usuario.create({
       data: {
         id_usuario: user.id_usuario,
-        ip_address: '', // puedes llenar con request IP via middleware
+        ip_address: '', // Puedes llenar con request IP via middleware
         user_agent: '',
-        token_sesion: '', // opcional: guardar token o hash
+        token_sesion: '', // Opcional: guardar token o hash
         activa: true,
       },
     });
 
     const token = this.jwtService.sign(payload);
-    return { access_token: token, user: { id_usuario: user.id_usuario, nombre: user.nombre, email: user.email, role: user.roles?.nombre_rol }, sessionId: session.id_sesion };
+    return {
+      access_token: token,
+      user: { id_usuario: user.id_usuario, nombre: user.nombre, email: user.email, role: user.roles?.nombre_rol },
+      sessionId: session.id_sesion,
+    };
   }
 
   async changePassword(id_usuario: number, oldPassword: string, newPassword: string) {

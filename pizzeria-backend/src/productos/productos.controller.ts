@@ -6,12 +6,14 @@ import { UpdateProductoDto } from './dto/update-producto.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('productos')
 export class ProductosController {
   constructor(private readonly productosService: ProductosService) {}
 
   // público: listar productos (filtrado por query)
+  @Public()
   @Get()
   async findAll(@Query('categoria') categoria?: string, @Query('disponible') disponible?: string) {
     const q: any = {};
@@ -20,6 +22,7 @@ export class ProductosController {
     return this.productosService.findAll(q);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productosService.findOne(id);
@@ -28,21 +31,18 @@ export class ProductosController {
   // admin CRUD
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
-  @Roles('admin')
   create(@Body() dto: CreateProductoDto) {
     return this.productosService.create(dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
-  @Roles('admin')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductoDto) {
     return this.productosService.update(id, dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
-  @Roles('admin')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productosService.remove(id);
   }

@@ -26,7 +26,6 @@ export class PedidosController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
   @Get()
   async findAll(@Query('id_cliente') id_cliente?: string) {
     const filter: any = {};
@@ -41,14 +40,12 @@ export class PedidosController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePedidoDto) {
     return this.pedidosService.update(id, dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.pedidosService.remove(id);

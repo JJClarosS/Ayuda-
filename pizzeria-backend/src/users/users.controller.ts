@@ -11,31 +11,26 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  @Roles('admin')
   async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @Roles('admin')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findById(id);
   }
 
   @Post()
-  @Roles('admin')
   async create(@Body() body: any) {
     return this.usersService.create(body);
   }
 
   @Patch(':id')
-  @Roles('admin')
   async update(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
     return this.usersService.update(id, body);
   }
 
   @Delete(':id')
-  @Roles('admin')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }

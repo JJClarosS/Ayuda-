@@ -15,7 +15,6 @@ export class ClientesController {
 
   // Solo admin puede listar todos
   @Get()
-  @Roles('Administrador')
   findAll() {
     return this.clientesService.findAll();
   }
@@ -27,26 +26,22 @@ export class ClientesController {
   }
 
   @Get(':id')
-  @Roles('Administrador')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.clientesService.findOne(id);
   }
 
   @Post()
   // permitir que admin cree clientes; si quieres permitir registro público, quita Roles/Guards
-  @Roles('Administrador')
   create(@Body() dto: CreateClienteDto) {
     return this.clientesService.create(dto);
   }
 
   @Patch(':id')
-  @Roles('Administrador')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateClienteDto) {
     return this.clientesService.update(id, dto);
   }
 
   @Delete(':id')
-  @Roles('Administrador')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.clientesService.remove(id);
   }
