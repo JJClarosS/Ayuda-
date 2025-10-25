@@ -1,26 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAlmaceneDto } from './dto/create-almacene.dto';
-import { UpdateAlmaceneDto } from './dto/update-almacene.dto';
+// src/almacenes/almacenes.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateAlmacenDto } from './dto/create-almacene.dto';
+import { UpdateAlmacenDto } from './dto/update-almacene.dto';
 
 @Injectable()
 export class AlmacenesService {
-  create(createAlmaceneDto: CreateAlmaceneDto) {
-    return 'This action adds a new almacene';
+  constructor(private prisma: PrismaService) {}
+
+  async create(dto: CreateAlmacenDto) {
+    return this.prisma.almacenes.create({ data: dto });
   }
 
-  findAll() {
-    return `This action returns all almacenes`;
+  async findAll() {
+    return this.prisma.almacenes.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} almacene`;
+  async findOne(id: number) {
+    const a = await this.prisma.almacenes.findUnique({ where: { id_almacen: id }});
+    if (!a) throw new NotFoundException('Almacén no encontrado');
+    return a;
   }
 
-  update(id: number, updateAlmaceneDto: UpdateAlmaceneDto) {
-    return `This action updates a #${id} almacene`;
+  async update(id: number, dto: UpdateAlmacenDto) {
+    await this.findOne(id);
+    return this.prisma.almacenes.update({ where: { id_almacen: id }, data: dto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} almacene`;
+  async remove(id: number) {
+    await this.findOne(id);
+    await this.prisma.almacenes.delete({ where: { id_almacen: id }});
+    return { success: true };
   }
 }

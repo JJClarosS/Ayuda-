@@ -1,3 +1,4 @@
+// src/pedidos/dto/update-pedido.dto.ts
 import { PartialType } from '@nestjs/mapped-types';
 import { CreatePedidoDto } from './create-pedido.dto';
 

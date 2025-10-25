@@ -455,6 +455,8 @@ model roles {
   descripcion    String
   activo         Boolean
   usuarios       usuarios[]
+
+  RolPermiso RolPermiso[]
 }
 
 model sesiones_usuario {
@@ -502,4 +504,20 @@ model usuarios {
   roles              roles                @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuarios_roles")
 
   @@index([email], map: "idx_usuarios_email")
+}
+
+model Permiso {
+  id_permiso     Int          @id @default(autoincrement())
+  nombre_permiso String       @unique @db.VarChar(50) //crear usuario
+  descripcion    String?
+  roles          RolPermiso[]
+}
+
+model RolPermiso {
+  id_rol     Int     @map("id_rol") //1,2,3
+  id_permiso Int     @map("id_permiso") //crear usuario
+  rol        roles   @relation(fields: [id_rol], references: [id_rol])
+  permiso    Permiso @relation(fields: [id_permiso], references: [id_permiso])
+
+  @@id([id_rol, id_permiso])
 }

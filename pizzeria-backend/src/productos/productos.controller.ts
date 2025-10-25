@@ -1,34 +1,49 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// src/productos/productos.controller.ts
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ProductosService } from './productos.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 @Controller('productos')
 export class ProductosController {
   constructor(private readonly productosService: ProductosService) {}
 
-  @Post()
-  create(@Body() createProductoDto: CreateProductoDto) {
-    return this.productosService.create(createProductoDto);
-  }
-
+  // público: listar productos (filtrado por query)
   @Get()
-  findAll() {
-    return this.productosService.findAll();
+  async findAll(@Query('categoria') categoria?: string, @Query('disponible') disponible?: string) {
+    const q: any = {};
+    if (categoria) q.categoria = parseInt(categoria, 10);
+    if (disponible !== undefined) q.disponibles = disponible === 'true';
+    return this.productosService.findAll(q);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productosService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.productosService.findOne(id);
   }
 
+  // admin CRUD
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post()
+  @Roles('admin')
+  create(@Body() dto: CreateProductoDto) {
+    return this.productosService.create(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductoDto: UpdateProductoDto) {
-    return this.productosService.update(+id, updateProductoDto);
+  @Roles('admin')
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductoDto) {
+    return this.productosService.update(id, dto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productosService.remove(+id);
+  @Roles('admin')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.productosService.remove(id);
   }
 }
