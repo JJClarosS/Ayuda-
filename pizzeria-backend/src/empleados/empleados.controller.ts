@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { EmpleadosService } from './empleados.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('empleados')
+@Controller('api/empleados')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class EmpleadosController {
   constructor(private readonly empleadosService: EmpleadosService) {}
 
@@ -30,5 +33,10 @@ export class EmpleadosController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.empleadosService.remove(+id);
+  }
+
+  @Patch(':id/cambiar_turno')
+  cambiarTurno(@Param('id') id: string, @Body('turno') turno: string) {
+    return this.empleadosService.cambiarTurno(+id, turno);
   }
 }

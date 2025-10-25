@@ -1,34 +1,47 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ReportesService } from './reportes.service';
-import { CreateReporteDto } from './dto/create-reporte.dto';
-import { UpdateReporteDto } from './dto/update-reporte.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('reportes')
+@Controller('api/reportes')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ReportesController {
   constructor(private readonly reportesService: ReportesService) {}
 
-  @Post()
-  create(@Body() createReporteDto: CreateReporteDto) {
-    return this.reportesService.create(createReporteDto);
+  @Get('financieros')
+  getReportesFinancieros(
+    @Query('fechaInicio') fechaInicio: string,
+    @Query('fechaFin') fechaFin: string,
+  ) {
+    return this.reportesService.getReportesFinancieros(fechaInicio, fechaFin);
   }
 
-  @Get()
-  findAll() {
-    return this.reportesService.findAll();
+  @Get('ventas')
+  getReportesVentas(
+    @Query('fechaInicio') fechaInicio: string,
+    @Query('fechaFin') fechaFin: string,
+  ) {
+    return this.reportesService.getReportesVentas(fechaInicio, fechaFin);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reportesService.findOne(+id);
+  @Get('inventario')
+  getReportesInventario() {
+    return this.reportesService.getReportesInventario();
+  }
+}
+
+@Controller('api/estadisticas')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
+export class EstadisticasController {
+  constructor(private readonly reportesService: ReportesService) {}
+
+  @Get('clientes')
+  getEstadisticasClientes() {
+    return this.reportesService.getEstadisticasClientes();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReporteDto: UpdateReporteDto) {
-    return this.reportesService.update(+id, updateReporteDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reportesService.remove(+id);
+  @Get('productos')
+  getEstadisticasProductos() {
+    return this.reportesService.getEstadisticasProductos();
   }
 }

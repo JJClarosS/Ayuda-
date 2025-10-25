@@ -1,26 +1,107 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCompraDto } from './dto/create-compra.dto';
 import { UpdateCompraDto } from './dto/update-compra.dto';
 
 @Injectable()
 export class ComprasService {
-  create(createCompraDto: CreateCompraDto) {
-    return 'This action adds a new compra';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createCompraDto: CreateCompraDto) {
+    return this.prisma.compras.create({
+      data: {
+        ...createCompraDto,
+        detalle_compras: {
+          create: createCompraDto.detalle_compras,
+        },
+      },
+      include: {
+        detalle_compras: {
+          include: {
+            ingrediente: true,
+          },
+        },
+        proveedor: true,
+        empleado: {
+          include: {
+            usuario: true,
+          },
+        },
+        almacen: true,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all compras`;
+  async findAll() {
+    return this.prisma.compras.findMany({
+      include: {
+        proveedor: true,
+        empleado: {
+          include: {
+            usuario: true,
+          },
+        },
+        almacen: true,
+        detalle_compras: {
+          include: {
+            ingrediente: true,
+          },
+        },
+      },
+      orderBy: {
+        fecha_compra: 'desc',
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} compra`;
+  async findOne(id: number) {
+    const compra = await this.prisma.compras.findUnique({
+      where: { id_compra: id },
+      include: {
+        proveedor: true,
+        empleado: {
+          include: {
+            usuario: true,
+          },
+        },
+        almacen: true,
+        detalle_compras: {
+          include: {
+            ingrediente: true,
+          },
+        },
+      },
+    });
+
+    if (!compra) {
+      throw new NotFoundException(`Compra con ID ${id} no encontrada`);
+    }
+
+    return compra;
   }
 
-  update(id: number, updateCompraDto: UpdateCompraDto) {
-    return `This action updates a #${id} compra`;
+  async update(id: number, updateCompraDto: UpdateCompraDto) {
+    await this.findOne(id);
+
+    return this.prisma.compras.update({
+      where: { id_compra: id },
+      data: updateCompraDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} compra`;
+  async remove(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.compras.update({
+      where: { id_compra: id },
+      data: { estado: 'Cancelada' },
+    });
+  }
+
+  async aprobarCompra(id: number) {
+    return this.prisma.compras.update({
+      where: { id_compra: id },
+      data: { estado: 'Recibida' },
+    });
   }
 }

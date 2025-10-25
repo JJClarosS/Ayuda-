@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ComprasService } from './compras.service';
 import { CreateCompraDto } from './dto/create-compra.dto';
 import { UpdateCompraDto } from './dto/update-compra.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('compras')
+@Controller('api/compras')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ComprasController {
   constructor(private readonly comprasService: ComprasService) {}
 
@@ -30,5 +33,10 @@ export class ComprasController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.comprasService.remove(+id);
+  }
+
+  @Patch(':id/aprobar')
+  aprobarCompra(@Param('id') id: string) {
+    return this.comprasService.aprobarCompra(+id);
   }
 }

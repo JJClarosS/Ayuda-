@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
 import { ComentariosService } from './comentarios.service';
 import { CreateComentarioDto } from './dto/create-comentario.dto';
-import { UpdateComentarioDto } from './dto/update-comentario.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('comentarios')
+@Controller('api/comentarios')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ComentariosController {
   constructor(private readonly comentariosService: ComentariosService) {}
 
@@ -20,11 +22,6 @@ export class ComentariosController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.comentariosService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateComentarioDto: UpdateComentarioDto) {
-    return this.comentariosService.update(+id, updateComentarioDto);
   }
 
   @Delete(':id')
