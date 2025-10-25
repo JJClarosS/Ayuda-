@@ -199,7 +199,7 @@ export class PermissionsGuard implements CanActivate {
         PUT: 'actualizar_roles',
         DELETE: 'eliminar_roles',
       },
-      '/api/usuarios': {
+      '/api/users': {
         GET: 'ver_usuarios',
         POST: 'crear_usuarios',
         PATCH: 'actualizar_usuarios',
