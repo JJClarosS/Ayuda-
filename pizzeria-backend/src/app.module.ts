@@ -37,6 +37,7 @@ import { ReportesModule } from './reportes/reportes.module';
 import { SesionesUsuarioModule } from './sesiones_usuario/sesiones_usuario.module';
 import { StockCriticoModule } from './stock_critico/stock_critico.module';
 import { VistasSqlModule } from './vistas_sql/vistas_sql.module';
+import { ReembolsosModule } from './reembolsos/reembolsos.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { VistasSqlModule } from './vistas_sql/vistas_sql.module';
     SesionesUsuarioModule,
     StockCriticoModule,
     VistasSqlModule,
+    ReembolsosModule,
   ],
   providers: [
     {
