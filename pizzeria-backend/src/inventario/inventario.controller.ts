@@ -1,16 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { InventarioService } from './inventario.service';
-import { CreateInventarioDto } from './dto/create-inventario.dto';
 import { UpdateInventarioDto } from './dto/update-inventario.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('inventario')
+@Controller('api/inventario')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class InventarioController {
   constructor(private readonly inventarioService: InventarioService) {}
-
-  @Post()
-  create(@Body() createInventarioDto: CreateInventarioDto) {
-    return this.inventarioService.create(createInventarioDto);
-  }
 
   @Get()
   findAll() {
@@ -26,9 +23,15 @@ export class InventarioController {
   update(@Param('id') id: string, @Body() updateInventarioDto: UpdateInventarioDto) {
     return this.inventarioService.update(+id, updateInventarioDto);
   }
+}
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.inventarioService.remove(+id);
+@Controller('api/stock_critico')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
+export class StockCriticoController {
+  constructor(private readonly inventarioService: InventarioService) {}
+
+  @Get()
+  getStockCritico() {
+    return this.inventarioService.getStockCritico();
   }
 }

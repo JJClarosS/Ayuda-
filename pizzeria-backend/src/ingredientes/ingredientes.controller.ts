@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { IngredientesService } from './ingredientes.service';
 import { CreateIngredienteDto } from './dto/create-ingrediente.dto';
 import { UpdateIngredienteDto } from './dto/update-ingrediente.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('ingredientes')
+@Controller('api/ingredientes')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class IngredientesController {
   constructor(private readonly ingredientesService: IngredientesService) {}
 

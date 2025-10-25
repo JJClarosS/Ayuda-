@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
-import { CreateInventarioDto } from './dto/create-inventario.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateInventarioDto } from './dto/update-inventario.dto';
 
 @Injectable()
 export class InventarioService {
-  create(createInventarioDto: CreateInventarioDto) {
-    return 'This action adds a new inventario';
+  constructor(private prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.inventario_almacen.findMany({
+      include: {
+        almacen: true,
+        ingrediente: true,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all inventario`;
+  async findOne(id: number) {
+    const inventario = await this.prisma.inventario_almacen.findUnique({
+      where: { id_inventario: id },
+      include: {
+        almacen: true,
+        ingrediente: true,
+      },
+    });
+
+    if (!inventario) {
+      throw new NotFoundException(`Registro de inventario con ID ${id} no encontrado`);
+    }
+
+    return inventario;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} inventario`;
+  async update(id: number, updateInventarioDto: UpdateInventarioDto) {
+    await this.findOne(id);
+
+    return this.prisma.inventario_almacen.update({
+      where: { id_inventario: id },
+      data: updateInventarioDto,
+    });
   }
 
-  update(id: number, updateInventarioDto: UpdateInventarioDto) {
-    return `This action updates a #${id} inventario`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} inventario`;
+  async getStockCritico() {
+    return this.prisma.$queryRaw`
+      SELECT * FROM vista_inventario_critico
+    `;
   }
 }

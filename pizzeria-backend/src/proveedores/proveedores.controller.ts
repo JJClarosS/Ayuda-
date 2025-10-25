@@ -1,15 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { ProveedoresService } from './proveedores.service';
 import { CreateProveedoreDto } from './dto/create-proveedore.dto';
 import { UpdateProveedoreDto } from './dto/update-proveedore.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('proveedores')
+@Controller('api/proveedores')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ProveedoresController {
   constructor(private readonly proveedoresService: ProveedoresService) {}
 
   @Post()
-  create(@Body() createProveedoreDto: CreateProveedoreDto) {
-    return this.proveedoresService.create(createProveedoreDto);
+  create(@Body() createProveedorDto: CreateProveedoreDto) {
+    return this.proveedoresService.create(createProveedorDto);
   }
 
   @Get()
@@ -23,12 +26,7 @@ export class ProveedoresController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProveedoreDto: UpdateProveedoreDto) {
-    return this.proveedoresService.update(+id, updateProveedoreDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.proveedoresService.remove(+id);
+  update(@Param('id') id: string, @Body() updateProveedorDto: UpdateProveedoreDto) {
+    return this.proveedoresService.update(+id, updateProveedorDto);
   }
 }

@@ -1,26 +1,58 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { UpdateMesaDto } from './dto/update-mesa.dto';
 
 @Injectable()
 export class MesasService {
-  create(createMesaDto: CreateMesaDto) {
-    return 'This action adds a new mesa';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createMesaDto: CreateMesaDto) {
+    return this.prisma.mesas.create({
+      data: createMesaDto,
+    });
   }
 
-  findAll() {
-    return `This action returns all mesas`;
+  async findAll() {
+    return this.prisma.mesas.findMany({
+      where: { activo: true },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} mesa`;
+  async findOne(id: number) {
+    const mesa = await this.prisma.mesas.findUnique({
+      where: { id_mesa: id, activo: true },
+    });
+
+    if (!mesa) {
+      throw new NotFoundException(`Mesa con ID ${id} no encontrada`);
+    }
+
+    return mesa;
   }
 
-  update(id: number, updateMesaDto: UpdateMesaDto) {
-    return `This action updates a #${id} mesa`;
+  async update(id: number, updateMesaDto: UpdateMesaDto) {
+    await this.findOne(id);
+
+    return this.prisma.mesas.update({
+      where: { id_mesa: id },
+      data: updateMesaDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} mesa`;
+  async remove(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.mesas.update({
+      where: { id_mesa: id },
+      data: { activo: false },
+    });
+  }
+
+  async cambiarEstado(id: number, estado: string) {
+    return this.prisma.mesas.update({
+      where: { id_mesa: id },
+      data: { estado },
+    });
   }
 }

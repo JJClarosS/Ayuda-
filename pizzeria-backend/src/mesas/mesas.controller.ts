@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { MesasService } from './mesas.service';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { UpdateMesaDto } from './dto/update-mesa.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('mesas')
+@Controller('api/mesas')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class MesasController {
   constructor(private readonly mesasService: MesasService) {}
 
@@ -30,5 +33,10 @@ export class MesasController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.mesasService.remove(+id);
+  }
+
+  @Patch(':id/cambiar_estado')
+  cambiarEstado(@Param('id') id: string, @Body('estado') estado: string) {
+    return this.mesasService.cambiarEstado(+id, estado);
   }
 }
