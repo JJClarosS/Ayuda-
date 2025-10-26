@@ -2,29 +2,33 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class EmpleadosService {
   constructor(private prisma: PrismaService) {}
 
   async create(createEmpleadoDto: CreateEmpleadoDto) {
-    return this.prisma.empleados.create({
-      data: createEmpleadoDto,
-    });
-  }
+    const data = Object.fromEntries(
+      Object.entries(createEmpleadoDto).filter(([_, value]) => value !== undefined)
+    ) as Prisma.empleadosCreateInput;
+
+    return this.prisma.empleados.create({ data });
+  };
+  
 
   async findAll() {
     return this.prisma.empleados.findMany({
       where: { activo: true },
       include: {
-        usuario: {
+        usuarios: {
           select: {
             nombre: true,
             apellido: true,
             email: true,
           },
         },
-        almacen: true,
+        almacenes: true,
       },
     });
   }
@@ -33,14 +37,14 @@ export class EmpleadosService {
     const empleado = await this.prisma.empleados.findUnique({
       where: { id_empleado: id, activo: true },
       include: {
-        usuario: {
+        usuarios: {
           select: {
             nombre: true,
             apellido: true,
             email: true,
           },
         },
-        almacen: true,
+        almacenes: true,
       },
     });
 

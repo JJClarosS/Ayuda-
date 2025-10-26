@@ -2,15 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMesaDto } from './dto/create-mesa.dto';
 import { UpdateMesaDto } from './dto/update-mesa.dto';
+import { cleanPrismaData } from 'src/utils/prisma-clean';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class MesasService {
   constructor(private prisma: PrismaService) {}
 
   async create(createMesaDto: CreateMesaDto) {
-    return this.prisma.mesas.create({
-      data: createMesaDto,
-    });
+    const data = Object.fromEntries(
+      Object.entries(createMesaDto).filter(([_, value]) => value !== undefined)
+    ) as Prisma.mesasCreateInput;
+
+    return this.prisma.mesas.create({ data });
   }
 
   async findAll() {

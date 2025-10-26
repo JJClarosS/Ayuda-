@@ -2,16 +2,22 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateIngredienteDto } from './dto/create-ingrediente.dto';
 import { UpdateIngredienteDto } from './dto/update-ingrediente.dto';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class IngredientesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createIngredienteDto: CreateIngredienteDto) {
-    return this.prisma.ingredientes.create({
-      data: createIngredienteDto,
-    });
-  }
+  // Filtra cualquier campo undefined
+  const data = Object.fromEntries(
+    Object.entries(createIngredienteDto).filter(([_, value]) => value !== undefined)
+  ) as Prisma.ingredientesCreateInput;
+
+  return this.prisma.ingredientes.create({
+    data,
+  });
+}
 
   async findAll() {
     return this.prisma.ingredientes.findMany({

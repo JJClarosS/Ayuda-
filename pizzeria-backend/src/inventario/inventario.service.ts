@@ -9,8 +9,8 @@ export class InventarioService {
   async findAll() {
     return this.prisma.inventario_almacen.findMany({
       include: {
-        almacen: true,
-        ingrediente: true,
+        almacenes: true,
+        ingredientes: true,
       },
     });
   }
@@ -19,8 +19,8 @@ export class InventarioService {
     const inventario = await this.prisma.inventario_almacen.findUnique({
       where: { id_inventario: id },
       include: {
-        almacen: true,
-        ingrediente: true,
+        almacenes: true,
+        ingredientes: true,
       },
     });
 

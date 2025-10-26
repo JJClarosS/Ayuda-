@@ -1,17 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProveedoreDto } from './dto/create-proveedore.dto';
+import { CreateProveedorDto } from './dto/create-proveedore.dto';
 import { UpdateProveedoreDto } from './dto/update-proveedore.dto';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class ProveedoresService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createProveedorDto: CreateProveedoreDto) {
-    return this.prisma.proveedores.create({
-      data: createProveedorDto,
-    });
-  }
+  async create(createProveedorDto: CreateProveedorDto) {
+  // Filtra todos los campos undefined
+  const data = Object.fromEntries(
+    Object.entries(createProveedorDto).filter(([_, value]) => value !== undefined)
+  ) as Prisma.proveedoresCreateInput;
+
+  return this.prisma.proveedores.create({
+    data,
+  });
+}
 
   async findAll() {
     return this.prisma.proveedores.findMany({
