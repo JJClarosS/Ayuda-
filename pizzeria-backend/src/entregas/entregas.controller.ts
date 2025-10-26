@@ -5,7 +5,7 @@ import { UpdateEntregaDto } from './dto/update-entregas.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/entregas')
+@Controller('entregas')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class EntregasController {
   constructor(private readonly entregasService: EntregasService) {}

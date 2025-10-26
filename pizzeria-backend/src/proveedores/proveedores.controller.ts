@@ -5,7 +5,7 @@ import { UpdateProveedoreDto } from './dto/update-proveedore.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/proveedores')
+@Controller('proveedores')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ProveedoresController {
   constructor(private readonly proveedoresService: ProveedoresService) {}

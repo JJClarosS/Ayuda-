@@ -5,7 +5,7 @@ import { UpdateMesaDto } from './dto/update-mesa.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/mesas')
+@Controller('mesas')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class MesasController {
   constructor(private readonly mesasService: MesasService) {}

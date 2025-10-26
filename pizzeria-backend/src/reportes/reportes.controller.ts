@@ -3,7 +3,7 @@ import { ReportesService } from './reportes.service';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/reportes')
+@Controller('reportes')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ReportesController {
   constructor(private readonly reportesService: ReportesService) {}

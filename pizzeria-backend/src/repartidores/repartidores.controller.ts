@@ -5,7 +5,7 @@ import { UpdateRepartidorDto } from './dto/update-repartidore.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/repartidores')
+@Controller('repartidores')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class RepartidoresController {
   constructor(private readonly repartidoresService: RepartidoresService) {}

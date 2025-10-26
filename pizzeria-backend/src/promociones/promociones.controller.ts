@@ -5,7 +5,7 @@ import { UpdatePromocioneDto } from './dto/update-promocione.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/promociones')
+@Controller('promociones')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class PromocionesController {
   constructor(private readonly promocionesService: PromocionesService) {}

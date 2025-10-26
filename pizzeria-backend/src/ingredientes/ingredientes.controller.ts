@@ -5,7 +5,7 @@ import { UpdateIngredienteDto } from './dto/update-ingrediente.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/ingredientes')
+@Controller('ingredientes')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class IngredientesController {
   constructor(private readonly ingredientesService: IngredientesService) {}

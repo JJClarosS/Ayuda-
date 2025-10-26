@@ -5,7 +5,7 @@ import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/empleados')
+@Controller('empleados')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class EmpleadosController {
   constructor(private readonly empleadosService: EmpleadosService) {}

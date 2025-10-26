@@ -3,7 +3,7 @@ import { HistorialService } from './historial.service';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/historial_acciones')
+@Controller('historial_acciones')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class HistorialAccionesController {
   constructor(private readonly historialService: HistorialService) {}
@@ -14,7 +14,7 @@ export class HistorialAccionesController {
   }
 }
 
-@Controller('api/historial_clientes')
+@Controller('historial_clientes')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class HistorialClientesController {
   constructor(private readonly historialService: HistorialService) {}

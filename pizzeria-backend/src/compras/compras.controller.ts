@@ -5,7 +5,7 @@ import { UpdateCompraDto } from './dto/update-compra.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/compras')
+@Controller('compras')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ComprasController {
   constructor(private readonly comprasService: ComprasService) {}

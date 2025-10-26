@@ -3,7 +3,7 @@ import { VistasSqlService } from './vistas_sql.service';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/vistas_sql')
+@Controller('vistas_sql')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class VistasSqlController {
   constructor(private readonly vistasSqlService: VistasSqlService) {}

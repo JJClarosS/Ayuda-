@@ -5,7 +5,7 @@ import { UpdateReservaDto } from './dto/update-reserva.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/reservas')
+@Controller('reservas')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ReservasController {
   constructor(private readonly reservasService: ReservasService) {}

@@ -5,7 +5,7 @@ import { UpdateCategoriaDto } from './dto/update-categoria.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/categorias')
+@Controller('categorias')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class CategoriasController {
   constructor(private readonly categoriasService: CategoriasService) {}

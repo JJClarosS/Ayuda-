@@ -4,7 +4,7 @@ import { UpdateInventarioDto } from './dto/update-inventario.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/inventario')
+@Controller('inventario')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class InventarioController {
   constructor(private readonly inventarioService: InventarioService) {}

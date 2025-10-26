@@ -3,7 +3,7 @@ import { SesionesUsuarioService } from './sesiones_usuario.service';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/sesiones_usuario')
+@Controller('sesiones_usuario')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class SesionesUsuarioController {
   constructor(private readonly sesionesUsuarioService: SesionesUsuarioService) {}

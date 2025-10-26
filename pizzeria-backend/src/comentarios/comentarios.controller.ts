@@ -4,7 +4,7 @@ import { CreateComentarioDto } from './dto/create-comentario.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('api/comentarios')
+@Controller('comentarios')
 @UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class ComentariosController {
   constructor(private readonly comentariosService: ComentariosService) {}
