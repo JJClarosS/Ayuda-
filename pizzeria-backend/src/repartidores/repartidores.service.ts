@@ -1,26 +1,70 @@
-import { Injectable } from '@nestjs/common';
-import { CreateRepartidoreDto } from './dto/create-repartidore.dto';
-import { UpdateRepartidoreDto } from './dto/update-repartidore.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateRepartidorDto } from './dto/create-repartidore.dto';
+import { UpdateRepartidorDto } from './dto/update-repartidore.dto';
 
 @Injectable()
 export class RepartidoresService {
-  create(createRepartidoreDto: CreateRepartidoreDto) {
-    return 'This action adds a new repartidore';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createRepartidorDto: CreateRepartidorDto) {
+    return this.prisma.repartidores.create({
+      data: createRepartidorDto,
+      include: {
+        empleados: {
+          include: {
+            usuarios: true,
+          },
+        },
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all repartidores`;
+  async findAll() {
+    return this.prisma.repartidores.findMany({
+      where: { activo: true },
+      include: {
+        empleados: {
+          include: {
+            usuarios: true,
+          },
+        },
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} repartidore`;
+  async findOne(id: number) {
+    const repartidor = await this.prisma.repartidores.findUnique({
+      where: { id_repartidor: id, activo: true },
+      include: {
+        empleados: {
+          include: {
+            usuarios: true,
+          },
+        },
+      },
+    });
+
+    if (!repartidor) {
+      throw new NotFoundException(`Repartidor con ID ${id} no encontrado`);
+    }
+
+    return repartidor;
   }
 
-  update(id: number, updateRepartidoreDto: UpdateRepartidoreDto) {
-    return `This action updates a #${id} repartidore`;
+  async update(id: number, updateRepartidorDto: UpdateRepartidorDto) {
+    await this.findOne(id);
+
+    return this.prisma.repartidores.update({
+      where: { id_repartidor: id },
+      data: updateRepartidorDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} repartidore`;
+  async cambiarDisponibilidad(id: number, disponible: boolean) {
+    return this.prisma.repartidores.update({
+      where: { id_repartidor: id },
+      data: { disponible },
+    });
   }
 }

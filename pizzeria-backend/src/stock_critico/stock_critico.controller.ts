@@ -1,34 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// src/stock-critico/stock-critico.controller.ts
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { StockCriticoService } from './stock_critico.service';
-import { CreateStockCriticoDto } from './dto/create-stock_critico.dto';
-import { UpdateStockCriticoDto } from './dto/update-stock_critico.dto';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
 @Controller('stock-critico')
+@UseGuards(PermissionsGuard)
 export class StockCriticoController {
   constructor(private readonly stockCriticoService: StockCriticoService) {}
 
-  @Post()
-  create(@Body() createStockCriticoDto: CreateStockCriticoDto) {
-    return this.stockCriticoService.create(createStockCriticoDto);
-  }
-
   @Get()
-  findAll() {
-    return this.stockCriticoService.findAll();
+  getStockCritico() {
+    return this.stockCriticoService.getStockCritico();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.stockCriticoService.findOne(+id);
+  @Get('almacen/:id')
+  getStockCriticoByAlmacen(@Param('id') id: string) {
+    return this.stockCriticoService.getStockCriticoByAlmacen(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStockCriticoDto: UpdateStockCriticoDto) {
-    return this.stockCriticoService.update(+id, updateStockCriticoDto);
+  @Get('ingredientes')
+  getIngredientesStockBajo() {
+    return this.stockCriticoService.getIngredientesStockBajo();
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.stockCriticoService.remove(+id);
+  @Get('alertas')
+  getAlertasStock() {
+    return this.stockCriticoService.getAlertasStock();
   }
 }

@@ -1,26 +1,111 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePreferenciasClienteDto } from './dto/create-preferencias_cliente.dto';
+// src/preferencias-clientes/preferencias-clientes.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdatePreferenciasClienteDto } from './dto/update-preferencias_cliente.dto';
 
 @Injectable()
 export class PreferenciasClientesService {
-  create(createPreferenciasClienteDto: CreatePreferenciasClienteDto) {
-    return 'This action adds a new preferenciasCliente';
+  constructor(private prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.preferencias_clientes.findMany({
+      include: {
+        clientes: {
+          include: {
+            usuarios: true,
+          },
+        },
+        productos: true,
+        categorias: true,
+        tamano: true,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all preferenciasClientes`;
+  async findOne(id: number) {
+    const preferencia = await this.prisma.preferencias_clientes.findUnique({
+      where: { id_preferencia: id },
+      include: {
+        clientes: {
+          include: {
+            usuarios: true,
+          },
+        },
+        productos: true,
+        categorias: true,
+        tamano: true,
+      },
+    });
+
+    if (!preferencia) {
+      throw new NotFoundException(`Preferencias del cliente con ID ${id} no encontradas`);
+    }
+
+    return preferencia;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} preferenciasCliente`;
+  async findByCliente(idCliente: number) {
+    const preferencia = await this.prisma.preferencias_clientes.findUnique({
+      where: { id_cliente: idCliente },
+      include: {
+        clientes: {
+          include: {
+            usuarios: true,
+          },
+        },
+        productos: true,
+        categorias: true,
+        tamano: true,
+      },
+    });
+
+    if (!preferencia) {
+      throw new NotFoundException(`Preferencias del cliente con ID ${idCliente} no encontradas`);
+    }
+
+    return preferencia;
   }
 
-  update(id: number, updatePreferenciasClienteDto: UpdatePreferenciasClienteDto) {
-    return `This action updates a #${id} preferenciasCliente`;
+  async update(id: number, updatePreferenciasClienteDto: UpdatePreferenciasClienteDto) {
+    const preferencia = await this.prisma.preferencias_clientes.findUnique({
+      where: { id_preferencia: id },
+    });
+
+    if (!preferencia) {
+      throw new NotFoundException(`Preferencias del cliente con ID ${id} no encontradas`);
+    }
+
+    return this.prisma.preferencias_clientes.update({
+      where: { id_preferencia: id },
+      data: {
+        ...updatePreferenciasClienteDto,
+        fecha_actualizacion: new Date(),
+      },
+      include: {
+        clientes: {
+          include: {
+            usuarios: true,
+          },
+        },
+        productos: true,
+        categorias: true,
+        tamano: true,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} preferenciasCliente`;
+  async remove(id: number) {
+    const preferencia = await this.prisma.preferencias_clientes.findUnique({
+      where: { id_preferencia: id },
+    });
+
+    if (!preferencia) {
+      throw new NotFoundException(`Preferencias del cliente con ID ${id} no encontradas`);
+    }
+
+    // Eliminación lógica (como no hay columna activo, hacemos delete físico)
+    return this.prisma.preferencias_clientes.delete({
+      where: { id_preferencia: id },
+    });
   }
 }

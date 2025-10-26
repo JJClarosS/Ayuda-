@@ -1,26 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMetodosPagoDto } from './dto/create-metodos_pago.dto';
-import { UpdateMetodosPagoDto } from './dto/update-metodos_pago.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MetodosPagoService {
-  create(createMetodosPagoDto: CreateMetodosPagoDto) {
-    return 'This action adds a new metodosPago';
+  constructor(private prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.metodos_pago.findMany({
+      where: { activo: true },
+    });
   }
 
-  findAll() {
-    return `This action returns all metodosPago`;
-  }
+  async findOne(id: number) {
+    const metodo = await this.prisma.metodos_pago.findUnique({
+      where: { id_metodo: id, activo: true },
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} metodosPago`;
-  }
+    if (!metodo) {
+      throw new NotFoundException(`Método de pago con ID ${id} no encontrado`);
+    }
 
-  update(id: number, updateMetodosPagoDto: UpdateMetodosPagoDto) {
-    return `This action updates a #${id} metodosPago`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} metodosPago`;
+    return metodo;
   }
 }

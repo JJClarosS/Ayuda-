@@ -30,14 +30,15 @@ import { RecetasModule } from './recetas/recetas.module';
 import { RepartidoresModule } from './repartidores/repartidores.module';
 import { ReservasModule } from './reservas/reservas.module';
 import { RolesModule } from './roles/roles.module';
-import { HistorialAccionesModule } from './historial_acciones/historial_acciones.module';
-import { HistorialClientesModule } from './historial_clientes/historial_clientes.module';
 import { PreferenciasClientesModule } from './preferencias_clientes/preferencias_clientes.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { SesionesUsuarioModule } from './sesiones_usuario/sesiones_usuario.module';
 import { StockCriticoModule } from './stock_critico/stock_critico.module';
 import { VistasSqlModule } from './vistas_sql/vistas_sql.module';
 import { ReembolsosModule } from './reembolsos/reembolsos.module';
+import { HistorialModule } from './historial/historial.module';
+import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
+import { EstadisticasModule } from './estadisticas/estadisticas.module';
 
 @Module({
   imports: [
@@ -71,14 +72,15 @@ import { ReembolsosModule } from './reembolsos/reembolsos.module';
     RepartidoresModule,
     ReservasModule,
     RolesModule,
-    HistorialAccionesModule,
-    HistorialClientesModule,
     PreferenciasClientesModule,
     ReportesModule,
     SesionesUsuarioModule,
     StockCriticoModule,
     VistasSqlModule,
     ReembolsosModule,
+    HistorialModule,
+    DisponibilidadModule,
+    EstadisticasModule,
   ],
   providers: [
     {

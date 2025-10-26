@@ -1,16 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { MetodosPagoService } from './metodos_pago.service';
-import { CreateMetodosPagoDto } from './dto/create-metodos_pago.dto';
-import { UpdateMetodosPagoDto } from './dto/update-metodos_pago.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('metodos-pago')
+@Controller('api/metodos_pago')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class MetodosPagoController {
   constructor(private readonly metodosPagoService: MetodosPagoService) {}
-
-  @Post()
-  create(@Body() createMetodosPagoDto: CreateMetodosPagoDto) {
-    return this.metodosPagoService.create(createMetodosPagoDto);
-  }
 
   @Get()
   findAll() {
@@ -20,15 +16,5 @@ export class MetodosPagoController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.metodosPagoService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMetodosPagoDto: UpdateMetodosPagoDto) {
-    return this.metodosPagoService.update(+id, updateMetodosPagoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.metodosPagoService.remove(+id);
   }
 }

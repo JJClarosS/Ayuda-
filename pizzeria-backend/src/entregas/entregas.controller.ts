@@ -1,15 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { EntregasService } from './entregas.service';
-import { CreateEntregasDto } from './dto/create-entregas.dto';
-import { UpdateEntregasDto } from './dto/update-entregas.dto';
+import { CreateEntregaDto } from './dto/create-entregas.dto';
+import { UpdateEntregaDto } from './dto/update-entregas.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('entregas')
+@Controller('api/entregas')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class EntregasController {
   constructor(private readonly entregasService: EntregasService) {}
 
   @Post()
-  create(@Body() createEntregasDto: CreateEntregasDto) {
-    return this.entregasService.create(createEntregasDto);
+  create(@Body() createEntregaDto: CreateEntregaDto) {
+    return this.entregasService.create(createEntregaDto);
   }
 
   @Get()
@@ -23,12 +26,12 @@ export class EntregasController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEntregasDto: UpdateEntregasDto) {
-    return this.entregasService.update(+id, updateEntregasDto);
+  update(@Param('id') id: string, @Body() updateEntregaDto: UpdateEntregaDto) {
+    return this.entregasService.update(+id, updateEntregaDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.entregasService.remove(+id);
+  @Patch(':id/cambiar_estado')
+  cambiarEstado(@Param('id') id: string, @Body('estado') estado: string) {
+    return this.entregasService.cambiarEstado(+id, estado);
   }
 }

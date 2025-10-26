@@ -1,26 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { CreateVistasSqlDto } from './dto/create-vistas_sql.dto';
-import { UpdateVistasSqlDto } from './dto/update-vistas_sql.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class VistasSqlService {
-  create(createVistasSqlDto: CreateVistasSqlDto) {
-    return 'This action adds a new vistasSql';
+  constructor(private prisma: PrismaService) {}
+
+  async getVistaPedidosCompletos() {
+    return this.prisma.$queryRaw`
+      SELECT * FROM vista_pedidos_completos
+      ORDER BY fecha_pedido DESC
+    `;
   }
 
-  findAll() {
-    return `This action returns all vistasSql`;
+  async getVistaInventarioCritico() {
+    return this.prisma.$queryRaw`
+      SELECT * FROM vista_inventario_critico
+    `;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vistasSql`;
+  async getVistaVentasDiarias() {
+    return this.prisma.$queryRaw`
+      SELECT * FROM vista_ventas_diarias
+    `;
   }
 
-  update(id: number, updateVistasSqlDto: UpdateVistasSqlDto) {
-    return `This action updates a #${id} vistasSql`;
+  async getVistaInventarioTotal() {
+    return this.prisma.$queryRaw`
+      SELECT * FROM vista_inventario_total
+    `;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vistasSql`;
+  async getVistaActividadUsuarios() {
+    return this.prisma.$queryRaw`
+      SELECT * FROM vista_actividad_usuarios
+    `;
   }
 }

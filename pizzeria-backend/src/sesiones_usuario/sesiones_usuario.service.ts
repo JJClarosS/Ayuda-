@@ -1,26 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSesionesUsuarioDto } from './dto/create-sesiones_usuario.dto';
-import { UpdateSesionesUsuarioDto } from './dto/update-sesiones_usuario.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class SesionesUsuarioService {
-  create(createSesionesUsuarioDto: CreateSesionesUsuarioDto) {
-    return 'This action adds a new sesionesUsuario';
+  constructor(private prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.sesiones_usuario.findMany({
+      include: {
+        usuarios: true,
+      },
+      orderBy: {
+        fecha_inicio: 'desc',
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all sesionesUsuario`;
+  async findOne(id: number) {
+    const sesion = await this.prisma.sesiones_usuario.findUnique({
+      where: { id_sesion: id },
+      include: {
+        usuarios: true,
+      },
+    });
+
+    if (!sesion) {
+      throw new NotFoundException(`Sesión con ID ${id} no encontrada`);
+    }
+
+    return sesion;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} sesionesUsuario`;
-  }
-
-  update(id: number, updateSesionesUsuarioDto: UpdateSesionesUsuarioDto) {
-    return `This action updates a #${id} sesionesUsuario`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} sesionesUsuario`;
+  async cerrarSesion(id: number) {
+    return this.prisma.sesiones_usuario.update({
+      where: { id_sesion: id },
+      data: {
+        activa: false,
+        fecha_fin: new Date(),
+      },
+    });
   }
 }

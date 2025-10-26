@@ -1,15 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { PromocionesService } from './promociones.service';
-import { CreatePromocioneDto } from './dto/create-promocione.dto';
+import { CreatePromocionDto } from './dto/create-promocione.dto';
 import { UpdatePromocioneDto } from './dto/update-promocione.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('promociones')
+@Controller('api/promociones')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class PromocionesController {
   constructor(private readonly promocionesService: PromocionesService) {}
 
   @Post()
-  create(@Body() createPromocioneDto: CreatePromocioneDto) {
-    return this.promocionesService.create(createPromocioneDto);
+  create(@Body() createPromocionDto: CreatePromocionDto) {
+    return this.promocionesService.create(createPromocionDto);
   }
 
   @Get()
@@ -23,8 +26,8 @@ export class PromocionesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePromocioneDto: UpdatePromocioneDto) {
-    return this.promocionesService.update(+id, updatePromocioneDto);
+  update(@Param('id') id: string, @Body() updatePromocionDto: UpdatePromocioneDto) {
+    return this.promocionesService.update(+id, updatePromocionDto);
   }
 
   @Delete(':id')

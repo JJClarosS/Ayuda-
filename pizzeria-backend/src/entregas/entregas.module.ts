@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { EntregasService } from './entregas.service';
 import { EntregasController } from './entregas.controller';
-import { CambiarEstadoModule } from './cambiar_estado/cambiar_estado.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [EntregasController],
   providers: [EntregasService],
-  imports: [CambiarEstadoModule],
 })
 export class EntregasModule {}

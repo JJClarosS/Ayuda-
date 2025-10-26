@@ -1,26 +1,84 @@
-import { Injectable } from '@nestjs/common';
-import { CreateEntregasDto } from './dto/create-entregas.dto';
-import { UpdateEntregasDto } from './dto/update-entregas.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateEntregaDto } from './dto/create-entregas.dto';
+import { UpdateEntregaDto } from './dto/update-entregas.dto';
 
 @Injectable()
 export class EntregasService {
-  create(createEntregasDto: CreateEntregasDto) {
-    return 'This action adds a new entregas';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createEntregaDto: CreateEntregaDto) {
+    return this.prisma.entregas.create({
+      data: createEntregaDto,
+      include: {
+        pedidos: true,
+        repartidores: {
+          include: {
+            empleados: {
+              include: {
+                usuarios: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all entregas`;
+  async findAll() {
+    return this.prisma.entregas.findMany({
+      include: {
+        pedidos: true,
+        repartidores: {
+          include: {
+            empleados: {
+              include: {
+                usuarios: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} entregas`;
+  async findOne(id: number) {
+    const entrega = await this.prisma.entregas.findUnique({
+      where: { id_entrega: id },
+      include: {
+        pedidos: true,
+        repartidores: {
+          include: {
+            empleados: {
+              include: {
+                usuarios: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!entrega) {
+      throw new NotFoundException(`Entrega con ID ${id} no encontrada`);
+    }
+
+    return entrega;
   }
 
-  update(id: number, updateEntregasDto: UpdateEntregasDto) {
-    return `This action updates a #${id} entregas`;
+  async update(id: number, updateEntregaDto: UpdateEntregaDto) {
+    await this.findOne(id);
+
+    return this.prisma.entregas.update({
+      where: { id_entrega: id },
+      data: updateEntregaDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} entregas`;
+  async cambiarEstado(id: number, estado: string) {
+    return this.prisma.entregas.update({
+      where: { id_entrega: id },
+      data: { estado },
+    });
   }
 }

@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { VistasSqlService } from './vistas_sql.service';
-import { CreateVistasSqlDto } from './dto/create-vistas_sql.dto';
-import { UpdateVistasSqlDto } from './dto/update-vistas_sql.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
-@Controller('vistas-sql')
+@Controller('api/vistas_sql')
+@UseGuards(AuthGuard('jwt'), PermissionsGuard)
 export class VistasSqlController {
   constructor(private readonly vistasSqlService: VistasSqlService) {}
 
-  @Post()
-  create(@Body() createVistasSqlDto: CreateVistasSqlDto) {
-    return this.vistasSqlService.create(createVistasSqlDto);
+  @Get('pedidos_completos')
+  getVistaPedidosCompletos() {
+    return this.vistasSqlService.getVistaPedidosCompletos();
   }
 
-  @Get()
-  findAll() {
-    return this.vistasSqlService.findAll();
+  @Get('inventario_critico')
+  getVistaInventarioCritico() {
+    return this.vistasSqlService.getVistaInventarioCritico();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.vistasSqlService.findOne(+id);
+  @Get('ventas_diarias')
+  getVistaVentasDiarias() {
+    return this.vistasSqlService.getVistaVentasDiarias();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVistasSqlDto: UpdateVistasSqlDto) {
-    return this.vistasSqlService.update(+id, updateVistasSqlDto);
+  @Get('inventario_total')
+  getVistaInventarioTotal() {
+    return this.vistasSqlService.getVistaInventarioTotal();
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.vistasSqlService.remove(+id);
+  @Get('actividad_usuarios')
+  getVistaActividadUsuarios() {
+    return this.vistasSqlService.getVistaActividadUsuarios();
   }
 }

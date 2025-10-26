@@ -1,34 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// src/reembolsos/reembolsos.controller.ts
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ReembolsosService } from './reembolsos.service';
-import { CreateReembolsoDto } from './dto/create-reembolso.dto';
-import { UpdateReembolsoDto } from './dto/update-reembolso.dto';
+import { ProcesarReembolsoDto } from './dto/procesar-reembolso.dto';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 
 @Controller('reembolsos')
+@UseGuards(PermissionsGuard)
 export class ReembolsosController {
   constructor(private readonly reembolsosService: ReembolsosService) {}
 
   @Post()
-  create(@Body() createReembolsoDto: CreateReembolsoDto) {
-    return this.reembolsosService.create(createReembolsoDto);
+  procesarReembolso(@Body() procesarReembolsoDto: ProcesarReembolsoDto) {
+    return this.reembolsosService.procesarReembolso(procesarReembolsoDto);
   }
 
   @Get()
-  findAll() {
-    return this.reembolsosService.findAll();
+  getReembolsos() {
+    return this.reembolsosService.getReembolsos();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reembolsosService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReembolsoDto: UpdateReembolsoDto) {
-    return this.reembolsosService.update(+id, updateReembolsoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reembolsosService.remove(+id);
+  getReembolsoById(@Param('id') id: string) {
+    return this.reembolsosService.getReembolsoById(+id);
   }
 }

@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreatePromocioneDto } from './create-promocione.dto';
+import { CreatePromocionDto } from './create-promocione.dto';
 
-export class UpdatePromocioneDto extends PartialType(CreatePromocioneDto) {}
+export class UpdatePromocioneDto extends PartialType(CreatePromocionDto) {}
