@@ -9,10 +9,41 @@ export class ProductosService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateProductoDto) {
-    // validar categoria existe
-    const cat = await this.prisma.categorias.findUnique({ where: { id_categoria: dto.id_categoria }});
-    if (!cat) throw new BadRequestException('Categoria no existe');
-    return this.prisma.productos.create({ data: dto });
+    // Validar que la categoría existe
+    const { producto_tamanos, ...productoData } = dto;
+    const cat = await this.prisma.categorias.findUnique({ where: { id_categoria: dto.id_categoria } });
+    if (!cat) throw new BadRequestException('Categoría no existe');
+
+    // Validar que los id_tamano existan
+    for (const tamano of producto_tamanos) {
+      const tamanoExists = await this.prisma.tamano.findUnique({
+        where: { id_tamano: tamano.id_tamano },
+      });
+      if (!tamanoExists) {
+        throw new BadRequestException(`Tamaño con id ${tamano.id_tamano} no existe`);
+      }
+    }
+
+    return this.prisma.productos.create({
+      data: {
+        ...productoData,
+        producto_tamanos: {
+          create: producto_tamanos.map(tamano => ({
+            id_tamano: tamano.id_tamano,
+            precio: tamano.precio, // Ahora es un número (Decimal)
+            disponible: tamano.disponible,
+            activo: tamano.activo ?? true, // Incluir activo con valor por defecto true
+            tamano: {
+              connect: { id_tamano: tamano.id_tamano }, // Conectar con el registro existente en tamano
+            },
+          })),
+        },
+      },
+      include: {
+        categorias: true,
+        producto_tamanos: true,
+      },
+    });
   }
 
   async findAll(query?: { categoria?: number; disponibles?: boolean }) {

@@ -39,6 +39,7 @@ import { ReembolsosModule } from './reembolsos/reembolsos.module';
 import { HistorialModule } from './historial/historial.module';
 import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
+import { DateSerializerInterceptor } from './common/interceptors/date-serializer.interceptor';
 
 @Module({
   imports: [
