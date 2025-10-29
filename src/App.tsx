@@ -39,6 +39,7 @@ export default function App() {
         <CustomerView
           onLoginClick={() => setShowLogin(true)}
           isAuthenticated={false}
+          onProfileClick={() => {}}
         />
       </div>
     );
@@ -56,6 +57,7 @@ export default function App() {
         <CustomerView
           onLoginClick={() => {}} // no se muestra
           isAuthenticated={true}
+          onProfileClick={() => {}}
         />
       </div>
     );

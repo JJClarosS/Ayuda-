@@ -1,7 +1,7 @@
 // components/customer/EditProfileModal.tsx
 import { useState, useEffect } from 'react';
 import API from '@/api/api';
-import { X, User } from 'lucide-react';
+import { X, User, Lock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 interface EditProfileModalProps {
@@ -9,55 +9,84 @@ interface EditProfileModalProps {
   onClose: () => void;
 }
 
+type Tab = 'profile' | 'password';
+
 export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const { user, login } = useAuth();
-  const [form, setForm] = useState({
+  const [activeTab, setActiveTab] = useState<Tab>('profile');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  //console.log('User en modal: ', user);
+
+  // Formularios
+  const [profile, setProfile] = useState({
     nombre: '',
     apellido: '',
     email: '',
     telefono: '',
-    password: '',
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+  });
 
   useEffect(() => {
     if (user && isOpen) {
-      setForm({
+      setProfile({
         nombre: user.firstName || '',
         apellido: user.lastName || '',
         email: user.email || '',
         telefono: user.phone || '',
-        password: '',
       });
+      setPasswordForm({ currentPassword: '', newPassword: '' });
+      setActiveTab('profile');
     }
   }, [user, isOpen]);
 
-  if (!isOpen || !user) return null;
+  if (!isOpen || !user || !user.id) {
+  return null; // Evita errores
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const data: any = {
-        nombre: form.nombre,
-        apellido: form.apellido || undefined,
-        email: form.email,
-        telefono: form.telefono || undefined,
-      };
-      if (form.password) data.password = form.password;
-
-      const res = await API.patch(`/api/users/${user.id}`, data);
+      const res = await API.patch(`/api/users/${user.id}`, {
+        nombre: profile.nombre,
+        apellido: profile.apellido || undefined,
+        email: profile.email,
+        telefono: profile.telefono || undefined,
+      });
       login({
           user: res.data,
-          access_token: '',
-          sessionId: ''
-      }); // actualiza contexto
+          access_token: useAuth().access_token || '',
+          sessionId: useAuth().sessionId || ''
+      });
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar.');
+      setError(err.response?.data?.message || 'Error al actualizar perfil.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await API.patch('/api/users/change-password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      alert('Contraseña actualizada con éxito.');
+      onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al cambiar contraseña.');
     } finally {
       setLoading(false);
     }
@@ -70,61 +99,110 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center gap-2">
-          <User className="w-6 h-6 text-orange-600" />
-          Mi Perfil
-        </h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Mi Perfil</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Nombre"
-            value={form.nombre}
-            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-            required
-            className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-          />
-          <input
-            type="text"
-            placeholder="Apellido"
-            value={form.apellido}
-            onChange={(e) => setForm({ ...form, apellido: e.target.value })}
-            className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            required
-            className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-          />
-          <input
-            type="tel"
-            placeholder="Teléfono"
-            value={form.telefono}
-            onChange={(e) => setForm({ ...form, telefono: e.target.value })}
-            className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-          />
-          <input
-            type="password"
-            placeholder="Nueva contraseña (dejar vacío para no cambiar)"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            minLength={6}
-            className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-          />
-
-          {error && <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg">{error}</div>}
-
+        {/* Tabs */}
+        <div className="flex border-b mb-6">
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 disabled:opacity-70"
+            onClick={() => setActiveTab('profile')}
+            className={`flex-1 py-2 text-center font-medium transition-colors ${
+              activeTab === 'profile'
+                ? 'text-orange-600 border-b-2 border-orange-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
           >
-            {loading ? 'Guardando...' : 'Guardar Cambios'}
+            <User className="w-4 h-4 inline mr-1" />
+            Datos
           </button>
-        </form>
+          <button
+            onClick={() => setActiveTab('password')}
+            className={`flex-1 py-2 text-center font-medium transition-colors ${
+              activeTab === 'password'
+                ? 'text-orange-600 border-b-2 border-orange-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Lock className="w-4 h-4 inline mr-1" />
+            Contraseña
+          </button>
+        </div>
+
+        {error && <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg mb-4">{error}</div>}
+
+        {/* Formulario de Perfil */}
+        {activeTab === 'profile' && (
+          <form onSubmit={handleProfileSubmit} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Nombre"
+              value={profile.nombre}
+              onChange={(e) => setProfile({ ...profile, nombre: e.target.value })}
+              required
+              className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+            />
+            <input
+              type="text"
+              placeholder="Apellido"
+              value={profile.apellido}
+              onChange={(e) => setProfile({ ...profile, apellido: e.target.value })}
+              className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={profile.email}
+              onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+              required
+              className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+            />
+            <input
+              type="tel"
+              placeholder="Teléfono"
+              value={profile.telefono}
+              onChange={(e) => setProfile({ ...profile, telefono: e.target.value })}
+              className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 disabled:opacity-70"
+            >
+              {loading ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
+          </form>
+        )}
+
+        {/* Formulario de Contraseña */}
+        {activeTab === 'password' && (
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <input
+              type="password"
+              placeholder="Contraseña actual"
+              value={passwordForm.currentPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+              required
+              className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+            />
+            <input
+              type="password"
+              placeholder="Nueva contraseña (mín. 6 caracteres)"
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              required
+              minLength={6}
+              className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 disabled:opacity-70"
+            >
+              {loading ? 'Cambiando...' : 'Cambiar Contraseña'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

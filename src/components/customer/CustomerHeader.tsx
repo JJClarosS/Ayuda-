@@ -14,6 +14,7 @@ interface CustomerHeaderProps {
   activeSection: SectionId;
   isAuthenticated: boolean;
   onLoginClick: () => void;
+  onProfileClick: () => void; // <-- NUEVO
 }
 
 export function CustomerHeader({
@@ -23,6 +24,7 @@ export function CustomerHeader({
   activeSection,
   isAuthenticated,
   onLoginClick,
+  onProfileClick
 }: CustomerHeaderProps) {
   const { logout } = useAuth(); // <-- Para cerrar sesión
 
@@ -39,10 +41,6 @@ export function CustomerHeader({
     // Opcional: redirigir al menú
     onNavigate('menu');
   };
-
-  function setShowEditProfile(arg0: boolean): void {
-    throw new Error('Function not implemented.');
-  }
 
   return (
     <header className="bg-gradient-to-r from-red-header to-red-header text-white sticky top-0 z-50 shadow-lg">
@@ -110,7 +108,7 @@ export function CustomerHeader({
             {isAuthenticated ? (
   <div className="flex items-center gap-2">
     <Button
-      onClick={() => setShowEditProfile(true)}
+      onClick={onProfileClick} // <-- Usa la función pasada
       variant="secondary"
       className="bg-white text-orange-600 hover:bg-orange-50 font-medium flex items-center gap-2"
     >

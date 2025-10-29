@@ -14,10 +14,11 @@ type View = SectionId | 'cart';
 
 interface CustomerViewProps {
   onLoginClick: () => void;   // NUEVA PROP
-  isAuthenticated?: boolean;  // OPCIONAL: si quieres ocultar header cuando está logueado
+  isAuthenticated?: boolean;
+  onProfileClick: () => void;  // OPCIONAL: si quieres ocultar header cuando está logueado
 }
 
-export function CustomerView({ onLoginClick, isAuthenticated = false }: CustomerViewProps) {
+export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileClick }: CustomerViewProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [currentView, setCurrentView] = useState<View>('menu');
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -171,12 +172,17 @@ export function CustomerView({ onLoginClick, isAuthenticated = false }: Customer
         activeSection={currentView === 'cart' ? 'menu' : currentView}
         isAuthenticated={isAuthenticated}
         onLoginClick={onLoginClick}
+        onProfileClick={() => setShowEditProfile(true)}// <-- Pasa función
+        
       />
+
+      {renderContent()}
+
+      {/* Modal de Perfil */}
       <EditProfileModal
-  isOpen={showEditProfile}
-  onClose={() => setShowEditProfile(false)}
-/>
-      <main className="flex-1">{renderContent()}</main>
+        isOpen={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+      />
     </>
   );
 }
