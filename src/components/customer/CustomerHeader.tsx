@@ -1,43 +1,63 @@
-import { ShoppingCart, Star, MapPin, Info, Utensils, MessageSquare } from 'lucide-react';
+// components/customer/CustomerHeader.tsx
+import { ShoppingCart, Star, MapPin, Info, Utensils, MessageSquare, LogOut, User } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Logo } from '@/components/common/Logo';
+import { useAuth } from '@/context/AuthContext'; // <-- Añadimos useAuth
 
 export type SectionId = 'menu' | 'reviews' | 'location' | 'about';
 
 interface CustomerHeaderProps {
   cartItemCount: number;
   onCartClick: () => void;
-  onNavigate: (section: SectionId) => void; 
+  onNavigate: (section: SectionId) => void;
   activeSection: SectionId;
+  isAuthenticated: boolean;
+  onLoginClick: () => void;
 }
 
-export function CustomerHeader({ 
-  cartItemCount, 
+export function CustomerHeader({
+  cartItemCount,
   onCartClick,
   onNavigate,
-  activeSection
+  activeSection,
+  isAuthenticated,
+  onLoginClick,
 }: CustomerHeaderProps) {
+  const { logout } = useAuth(); // <-- Para cerrar sesión
 
   const getLinkClassName = (section: SectionId) => {
     return `flex items-center gap-2 text-lg font-medium transition-colors px-3 py-2 rounded-md cursor-pointer ${
-      activeSection === section 
-        ? 'text-yellow-300' 
-        : 'text-white hover:text-yellow-300' 
+      activeSection === section
+        ? 'text-yellow-300'
+        : 'text-white hover:text-yellow-300'
     }`;
   };
+
+  const handleLogout = () => {
+    logout();
+    // Opcional: redirigir al menú
+    onNavigate('menu');
+  };
+
+  function setShowEditProfile(arg0: boolean): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <header className="bg-gradient-to-r from-red-header to-red-header text-white sticky top-0 z-50 shadow-lg">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
+          {/* Logo */}
           <div className="flex items-center gap-3">
             <Logo size={80} rounded bordered />
             <div>
               <h1 className="tracking-tight">Mr. Pizza</h1>
-              <p className="text-orange-100 opacity-90"> ¡El Señor Sabor!</p>
+              <p className="text-orange-100 opacity-90">¡El Señor Sabor!</p>
             </div>
           </div>
+
+          {/* Navegación */}
           <nav>
             <ul className="flex items-center gap-6">
               <li>
@@ -62,16 +82,20 @@ export function CustomerHeader({
               </li>
             </ul>
           </nav>
+
+          {/* Acciones: Carrito + Login/Logout */}
           <div className="flex items-center gap-4">
+            {/* Rating */}
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-300 fill-yellow-300" />
-              <span className='text-white'>4.8 ( 100 reseñas)</span>
+              <span className="text-white">4.8 (100 reseñas)</span>
             </div>
-            
-            <Button 
+
+            {/* Botón Carrito */}
+            <Button
               onClick={onCartClick}
               variant="secondary"
-              className="bg-white text-orange-600 hover:bg-orange-50 relative"
+              className="bg-white text-orange-600 hover:bg-orange-50 relative font-medium"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
               Carrito
@@ -81,6 +105,36 @@ export function CustomerHeader({
                 </Badge>
               )}
             </Button>
+
+            {/* Botón Iniciar Sesión o Cerrar Sesión */}
+            {isAuthenticated ? (
+  <div className="flex items-center gap-2">
+    <Button
+      onClick={() => setShowEditProfile(true)}
+      variant="secondary"
+      className="bg-white text-orange-600 hover:bg-orange-50 font-medium flex items-center gap-2"
+    >
+      <User className="w-4 h-4" />
+      Mi Perfil
+    </Button>
+    <Button
+      onClick={handleLogout}
+      variant="secondary"
+      className="bg-white text-red-600 hover:bg-red-50 font-medium flex items-center gap-2"
+    >
+      <LogOut className="w-4 h-4" />
+      Cerrar
+    </Button>
+  </div>
+) : (
+  <Button
+    onClick={onLoginClick}
+    variant="secondary"
+    className="bg-white text-orange-600 hover:bg-orange-50 font-medium"
+  >
+    Iniciar Sesión
+  </Button>
+)}
           </div>
         </div>
       </div>

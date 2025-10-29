@@ -1,4 +1,7 @@
 // index.ts
+
+import { ReactNode } from "react";
+
 // frontend/src/types/index.ts
 export enum TipoPedido {
   LOCAL = 'Local',
@@ -141,6 +144,7 @@ export interface Reservation {
 
 // Interfaz para clientes
 export interface Customer {
+  name: ReactNode;
   id: string; // id_cliente
   firstName: string; // nombre
   lastName?: string; // apellido, nullable

@@ -1,3 +1,4 @@
+// App.tsx
 import { useState } from 'react';
 import { useAuth } from './context/AuthContext';
 import { Login } from './components/auth/Login';
@@ -31,40 +32,36 @@ export default function App() {
     }
   };
 
-  // Si NO hay usuario y NO quiere iniciar sesión ➞ Mostrar vista cliente pública
+  // Vista pública (sin login)
   if (!user && !showLogin) {
     return (
-      <div className="min-h-screen bg-orange-50">
-        <CustomerView />
-        <div className="absolute top-4 right-4">
-          <button
-            onClick={() => setShowLogin(true)}
-            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700"
-          >
-            Iniciar Sesión
-          </button>
-        </div>
+      <div className="min-h-screen bg-orange-50 flex flex-col">
+        <CustomerView
+          onLoginClick={() => setShowLogin(true)}
+          isAuthenticated={false}
+        />
       </div>
     );
   }
 
-  // Si quiere iniciar sesión pero aún no se autenticó ➞ Mostrar Login
+  // Pantalla de login
   if (!user && showLogin) {
-    return (
-      <Login onBack={() => setShowLogin(false)} />
-    );
+    return <Login onBack={() => setShowLogin(false)} />;
   }
 
-  // Si es Cliente autenticado ➞ Vista privada del cliente
+  // Cliente autenticado
   if (user?.role === 'Cliente') {
     return (
-      <div className="min-h-screen bg-orange-50">
-        <CustomerView />
+      <div className="min-h-screen bg-orange-50 flex flex-col">
+        <CustomerView
+          onLoginClick={() => {}} // no se muestra
+          isAuthenticated={true}
+        />
       </div>
     );
   }
 
-  // Vista Admin o Cajero (panel con sidebar)
+  // Admin o Cajero
   if (user?.role === 'Administrador' || user?.role === 'Cajero') {
     return (
       <div className="min-h-screen bg-orange-50 flex">

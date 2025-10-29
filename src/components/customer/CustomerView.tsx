@@ -1,3 +1,4 @@
+// components/customer/CustomerView.tsx
 import { useState } from 'react';
 import { CustomerHeader, SectionId } from './CustomerHeader';
 import { Cart } from './Cart';
@@ -6,13 +7,22 @@ import { MenuSection } from './MenuSection';
 import { LocationSection } from './LocationSection';
 import { AboutUsSection } from './AboutUs';
 import { CartItem } from '@/types';
-import { getProducts } from '@/api/products'; // Reemplazamos mockData con datos reales
+import { getProducts } from '@/api/products';
+import { EditProfileModal } from './EditProfileModal';
 
 type View = SectionId | 'cart';
 
-export function CustomerView() {
+interface CustomerViewProps {
+  onLoginClick: () => void;   // NUEVA PROP
+  isAuthenticated?: boolean;  // OPCIONAL: si quieres ocultar header cuando está logueado
+}
+
+export function CustomerView({ onLoginClick, isAuthenticated = false }: CustomerViewProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [currentView, setCurrentView] = useState<View>('menu');
+  const [showEditProfile, setShowEditProfile] = useState(false);
+
+  // ... (tus funciones addToCart, removeFromCart, etc. siguen igual)
 
   const addToCart = async (
     pizzaId: string,
@@ -38,11 +48,10 @@ export function CustomerView() {
       const cartItem: CartItem = {
         productId: pizza.id,
         name: pizza.name,
-        image: pizza.image || '/placeholder.png', // Valor por defecto
+        image: pizza.image || '/placeholder.png',
         size: size === 'small' ? 'Pequeña' : size === 'medium' ? 'Mediana' : 'Grande',
         quantity,
         price: totalPrice,
-        //extras,
       };
       setCartItems([...cartItems, cartItem]);
     } catch (err) {
@@ -59,10 +68,9 @@ export function CustomerView() {
       const cartItem: CartItem = {
         productId: drink.id,
         name: drink.name,
-        image: drink.image || '/placeholder.png', // Valor por defecto
+        image: drink.image || '/placeholder.png',
         quantity: 1,
         price: drink.price || 0,
-        //extras: [],
       };
       setCartItems([...cartItems, cartItem]);
     } catch (err) {
@@ -79,10 +87,9 @@ export function CustomerView() {
       const cartItem: CartItem = {
         productId: dessert.id,
         name: dessert.name,
-        image: dessert.image || '/placeholder.png', // Valor por defecto
+        image: dessert.image || '/placeholder.png',
         quantity: 1,
         price: dessert.price || 0,
-        //extras: [],
       };
       setCartItems([...cartItems, cartItem]);
     } catch (err) {
@@ -101,9 +108,7 @@ export function CustomerView() {
     }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  const clearCart = () => setCartItems([]);
 
   const handleCheckout = (paymentMethod: string, deliveryAddress: string, comments: string) => {
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) + 3.5;
@@ -137,7 +142,7 @@ export function CustomerView() {
           <MenuSection
             onAddToCart={addToCart}
             onAddDrinkToCart={addDrinkToCart}
-            onAddDessertToCart={addDessertToCart} // Agregada la prop
+            onAddDessertToCart={addDessertToCart}
           />
         );
       case 'reviews':
@@ -151,21 +156,27 @@ export function CustomerView() {
           <MenuSection
             onAddToCart={addToCart}
             onAddDrinkToCart={addDrinkToCart}
-            onAddDessertToCart={addDessertToCart} // Agregada la prop
+            onAddDessertToCart={addDessertToCart}
           />
         );
     }
   };
 
   return (
-  <>
-    <CustomerHeader
-      cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-      onCartClick={() => setCurrentView('cart')}
-      onNavigate={(section) => setCurrentView(section)}
-      activeSection={currentView === 'cart' ? 'menu' : currentView}
-    />
-    {renderContent()}
-  </>
-);
+    <>
+      <CustomerHeader
+        cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+        onCartClick={() => setCurrentView('cart')}
+        onNavigate={(section) => setCurrentView(section)}
+        activeSection={currentView === 'cart' ? 'menu' : currentView}
+        isAuthenticated={isAuthenticated}
+        onLoginClick={onLoginClick}
+      />
+      <EditProfileModal
+  isOpen={showEditProfile}
+  onClose={() => setShowEditProfile(false)}
+/>
+      <main className="flex-1">{renderContent()}</main>
+    </>
+  );
 }
