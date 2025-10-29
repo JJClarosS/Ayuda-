@@ -1,13 +1,12 @@
-//Reseñas 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
 import { Star } from 'lucide-react';
+import { useState } from 'react';
 import { reviews as initialReviews } from '../../data/mockData';
 import { Review } from '../../types';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
 
 export function Reviews() {
   const [reviews, setReviews] = useState(initialReviews);
@@ -38,23 +37,24 @@ export function Reviews() {
     alert('¡Gracias por tu reseña!');
   };
 
-  const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const averageRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
 
   return (
-    <div className="p-8 bg-orange-50/30 min-h-screen">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div>
-          <h2 className="text-orange-900 mb-2">Reseñas de Clientes</h2>
-          <p className="text-orange-700">Comparte tu experiencia con nosotros</p>
+    <div className="py-12 bg-card min-h-screen">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        {/* Header */}
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-foreground">Reseñas de Clientes</h2>
+          <p className="text-muted-foreground mt-2">Comparte tu experiencia con nosotros</p>
         </div>
 
         {/* Rating Summary */}
-        <Card className="border-orange-200 bg-white">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-8">
+        <Card className="border-border bg-card shadow-md">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center gap-4">
               <div className="text-center">
-                <div className="text-orange-900 mb-2">{averageRating.toFixed(1)}</div>
-                <div className="flex gap-1 mb-2">
+                <div className="text-4xl font-bold text-destructive">{averageRating.toFixed(1)}</div>
+                <div className="flex gap-1 mt-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
@@ -66,34 +66,34 @@ export function Reviews() {
                     />
                   ))}
                 </div>
-                <p className="text-orange-600">Basado en {reviews.length} reseñas</p>
+                <p className="text-muted-foreground mt-2">Basado en {reviews.length} reseñas</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* New Review Form */}
-        <Card className="border-orange-200 bg-white">
+        <Card className="border-border bg-card shadow-md">
           <CardHeader>
-            <CardTitle className="text-orange-900">Deja tu Reseña</CardTitle>
+            <CardTitle className="text-2xl text-foreground">Deja tu Reseña</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6 space-y-6">
             <form onSubmit={handleSubmitReview} className="space-y-4">
               <div>
-                <Label htmlFor="name" className="text-orange-900">Tu Nombre</Label>
+                <Label htmlFor="name" className="text-foreground">Tu Nombre</Label>
                 <Input
                   id="name"
                   value={newReview.customerName}
                   onChange={(e) => setNewReview({ ...newReview, customerName: e.target.value })}
                   placeholder="Nombre completo"
-                  className="border-orange-200 mt-2"
+                  className="mt-2 border-border"
                   required
                 />
               </div>
 
               <div>
-                <Label className="text-orange-900 mb-2 block">Calificación</Label>
-                <div className="flex gap-2">
+                <Label className="text-foreground block">Calificación</Label>
+                <div className="flex gap-2 mt-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -116,22 +116,19 @@ export function Reviews() {
               </div>
 
               <div>
-                <Label htmlFor="comment" className="text-orange-900">Tu Comentario</Label>
+                <Label htmlFor="comment" className="text-foreground">Tu Comentario</Label>
                 <Textarea
                   id="comment"
                   value={newReview.comment}
                   onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                   placeholder="Cuéntanos sobre tu experiencia..."
-                  className="border-orange-200 mt-2"
+                  className="mt-2 border-border"
                   rows={4}
                   required
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                className="bg-orange-600 hover:bg-orange-700"
-              >
+              <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white">
                 Publicar Reseña
               </Button>
             </form>
@@ -139,33 +136,35 @@ export function Reviews() {
         </Card>
 
         {/* Reviews List */}
-        <div className="space-y-4">
-          <h3 className="text-orange-900">Todas las Reseñas</h3>
-          {reviews.map((review) => (
-            <Card key={review.id} className="border-orange-200 bg-white">
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-orange-900">{review.customerName}</p>
-                    <p className="text-orange-600">{new Date(review.date).toLocaleDateString('es-ES')}</p>
+        <div className="space-y-6">
+          <h3 className="text-2xl font-bold text-foreground">Todas las Reseñas</h3>
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <Card key={review.id} className="border-border bg-card shadow-md">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="text-foreground font-medium">{review.customerName}</p>
+                      <p className="text-muted-foreground text-sm">{new Date(review.date).toLocaleDateString('es-ES')}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= review.rating
+                              ? 'text-yellow-500 fill-yellow-500'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 ${
-                          star <= review.rating
-                            ? 'text-yellow-500 fill-yellow-500'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-orange-700">{review.comment}</p>
-              </CardContent>
-            </Card>
-          ))}
+                  <p className="text-muted-foreground">{review.comment}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>

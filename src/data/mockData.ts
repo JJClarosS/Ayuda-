@@ -1,4 +1,4 @@
-import { Pizza, Drink, Order, Reservation, Customer, Employee, InventoryItem, Purchase, Review } from '../types';
+import { Customer, Dessert, Drink, Employee, InventoryItem, Order, Pizza, Purchase, Reservation, Review } from '../types';
 
 export const pizzas: Pizza[] = [
   {
@@ -73,6 +73,29 @@ export const drinks: Drink[] = [
     price: 4.50,
     available: true
   }
+];
+export const desserts: Dessert[] = [
+  {
+    id: 'D001',
+    name: 'Tiramisú Clásico',
+    description: 'El postre italiano por excelencia, con mascarpone, café y cacao.',
+    price: 4.90,
+    image: '/images/desserts/tiramisu.jpg',
+  },
+  {
+    id: 'D002',
+    name: 'Panna Cotta de Vainilla',
+    description: 'Crema cocida suave con coulis de frutos rojos.',
+    price: 4.50,
+    image: '/images/desserts/pannacotta.jpg',
+  },
+  {
+    id: 'D003',
+    name: 'Helado Artesanal',
+    description: 'Bola de helado de la casa (vainilla, chocolate o pistacho).',
+    price: 3.00,
+    image: '/images/desserts/icecream.jpg',
+  },
 ];
 
 export const orders: Order[] = [

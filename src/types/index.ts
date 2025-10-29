@@ -16,9 +16,18 @@ export interface Drink {
   id: string;
   name: string;
   description: string;
-  image: string;
   price: number;
-  available: boolean;
+  image: string;
+  category: string;
+}
+
+export interface Dessert {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
 }
 
 export interface Order {
@@ -101,6 +110,8 @@ export interface PurchaseItem {
   total: number;
 }
 
+export type ItemCategory = 'pizza' | 'drink' | 'dessert';
+
 export interface CartItem {
   productId: string;
   name: string;
@@ -109,6 +120,7 @@ export interface CartItem {
   quantity: number;
   price: number;
   extras: string[];
+  type: ItemCategory;
 }
 
 export interface Review {

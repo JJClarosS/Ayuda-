@@ -1,14 +1,14 @@
+import { Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
-import { Label } from '../ui/label';
-import { Checkbox } from '../ui/checkbox';
+import { availableExtras } from '../../data/mockData';
 import { Pizza } from '../../types';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { Plus, Minus } from 'lucide-react';
-import { availableExtras } from '../../data/mockData';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Checkbox } from '../ui/checkbox';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Label } from '../ui/label';
 
 interface PizzaCardProps {
   pizza: Pizza;
@@ -45,7 +45,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
 
   return (
     <>
-      <Card className="border-orange-200 bg-white overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+      <Card className="bg-card border-border overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
         <div 
           className="relative h-56 overflow-hidden"
           onClick={() => setIsDialogOpen(true)}
@@ -60,14 +60,14 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
           </Badge>
         </div>
         <CardHeader>
-          <CardTitle className="text-orange-900">{pizza.name}</CardTitle>
-          <p className="text-orange-600">{pizza.description}</p>
+          <CardTitle className="text-card-foreground">{pizza.name}</CardTitle>
+          <p className="text-muted-foreground">{pizza.description}</p>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-orange-700">Desde</p>
-              <p className="text-orange-900">€{pizza.sizes.small.toFixed(2)}</p>
+              <p className="text-muted-foreground">Desde</p>
+              <p className="text-card-foreground font-semibold">€{pizza.sizes.small.toFixed(2)}</p>
             </div>
             <Button 
               onClick={() => setIsDialogOpen(true)}
@@ -81,9 +81,9 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
 
       {/* Customization Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl bg-card max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-orange-900">{pizza.name}</DialogTitle>
+            <DialogTitle className="text-card-foreground">{pizza.name}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
@@ -96,7 +96,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
             </div>
 
             <div>
-              <Label className="text-orange-900 mb-3 block">Selecciona el tamaño</Label>
+              <Label className="text-card-foreground mb-3 block">Selecciona el tamaño</Label>
               <div className="grid grid-cols-3 gap-3">
                 {(['small', 'medium', 'large'] as const).map((size) => (
                   <button
@@ -104,21 +104,21 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
                     onClick={() => setSelectedSize(size)}
                     className={`p-4 rounded-lg border-2 transition-all ${
                       selectedSize === size
-                        ? 'border-orange-600 bg-orange-50'
-                        : 'border-orange-200 hover:border-orange-400'
+                        ? 'border-orange-600 bg-accent'
+                        : 'border-border hover:border-orange-400'
                     }`}
                   >
-                    <p className="text-orange-900 capitalize">
+                    <p className="text-card-foreground capitalize">
                       {size === 'small' ? 'Pequeña' : size === 'medium' ? 'Mediana' : 'Grande'}
                     </p>
-                    <p className="text-orange-600">€{pizza.sizes[size].toFixed(2)}</p>
+                    <p className="text-muted-foreground">€{pizza.sizes[size].toFixed(2)}</p>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <Label className="text-orange-900 mb-3 block">Ingredientes extra (+€1.50 c/u)</Label>
+              <Label className="text-card-foreground mb-3 block">Ingredientes extra (+€1.50 c/u)</Label>
               <div className="grid grid-cols-2 gap-3">
                 {availableExtras.map((extra) => (
                   <div key={extra} className="flex items-center space-x-2">
@@ -129,7 +129,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
                     />
                     <label
                       htmlFor={extra}
-                      className="text-orange-700 cursor-pointer"
+                      className="text-card-foreground cursor-pointer"
                     >
                       {extra}
                     </label>
@@ -139,7 +139,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
             </div>
 
             <div>
-              <Label className="text-orange-900 mb-3 block">Cantidad</Label>
+              <Label className="text-card-foreground mb-3 block">Cantidad</Label>
               <div className="flex items-center gap-4">
                 <Button
                   type="button"
@@ -150,7 +150,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
-                <span className="text-orange-900 w-12 text-center">{quantity}</span>
+                <span className="text-card-foreground w-12 text-center">{quantity}</span>
                 <Button
                   type="button"
                   variant="outline"
@@ -163,10 +163,10 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
               </div>
             </div>
 
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+            <div className="bg-accent p-4 rounded-lg border border-border">
               <div className="flex justify-between items-center">
-                <span className="text-orange-900">Total</span>
-                <span className="text-orange-900">€{getCurrentPrice().toFixed(2)}</span>
+                <span className="text-card-foreground">Total</span>
+                <span className="text-card-foreground font-semibold">€{getCurrentPrice().toFixed(2)}</span>
               </div>
             </div>
           </div>

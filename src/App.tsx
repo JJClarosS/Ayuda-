@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { useAuth } from './context/AuthContext'; // Importar hook
-import { Login } from './components/auth/Login'; // Importar Login
 import { AdminSidebar } from './components/AdminSidebar';
+import { Login } from './components/auth/Login'; // Importar Login
+import { useAuth } from './context/AuthContext'; // Importar hook
 // import { Dashboard } from './components/admin/Dashboard';
-import { Orders } from './components/admin/Orders';
-import { Menu } from './components/admin/Menu';
-import { Reservations } from './components/admin/Reservations';
-import { Inventory } from './components/admin/Inventory';
-import { Purchases } from './components/admin/Purchases';
-import { UserManagement } from './components/admin/UserManagement'; // Importar nuevo
-import { Logs } from './components/admin/Logs'; // Importar nuevo
-import { CustomerView } from './components/customer/CustomerView';
 import { useMemo } from 'react';
+import { Inventory } from './components/admin/Inventory';
+import { Logs } from './components/admin/Logs'; // Importar nuevo
+import { Menu } from './components/admin/Menu';
+import { Orders } from './components/admin/Orders';
+import { Purchases } from './components/admin/Purchases';
+import { Reservations } from './components/admin/Reservations';
+import { UserManagement } from './components/admin/UserManagement'; // Importar nuevo
+import { CustomerView } from './components/customer/CustomerView';
 
 export default function App() {
-  const { user } = useAuth(); // Obtener el usuario del contexto
+  const { user, isLoading } = useAuth(); // Obtener el usuario del contexto
   const [adminView, setAdminView] = useState('dashboard');
 
   const adminViewComponent = useMemo (() => {
@@ -40,6 +40,17 @@ export default function App() {
         // return <Dashboard />;
     }
   }, [adminView] );
+
+    if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 1. Si no hay usuario, mostrar Login
   if (!user) {
