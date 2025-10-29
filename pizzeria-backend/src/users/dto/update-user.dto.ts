@@ -1,13 +1,12 @@
+// src/users/dto/update-user.dto.ts
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
-import { IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional } from 'class-validator';
+import { IsEmailUnique } from '../validators/is-email-unique.validator';
 
-/**
- * DTO para la actualización parcial de un usuario.
- * Nota: El cambio de contraseña debe ser manejado por un endpoint separado.
- */
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
-  @IsString()
-  password?: string; // Permitido solo para el servicio, pero idealmente se usa ChangePasswordDto
+  @IsEmail()
+  @IsEmailUnique() // Usa el validador personalizado
+  email?: string;
 }
