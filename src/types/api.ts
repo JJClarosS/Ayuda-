@@ -119,3 +119,139 @@ export interface Cliente {
   puntos_fidelidad: number;
   activo: boolean;
 }
+
+
+
+
+
+
+
+// Agregar al archivo existente src/types/api.ts
+
+// src/types/api.ts - Agregar al final del archivo
+
+export interface Ingrediente {
+  id_ingrediente: number;
+  nombre: string;
+  unidad_medida: string;
+  stock_minimo: number;
+  costo_unitario: number;
+  proveedor: string;
+  fecha_actualizacion: string;
+  activo: boolean;
+}
+
+export interface Almacen {
+  id_almacen: number;
+  nombre: string;
+  direccion: string;
+  ciudad: string;
+  telefono: string | null;
+  responsable: string | null;
+  tipo: string;
+  activo: boolean;
+  fecha_apertura: string;
+}
+
+export interface InventarioAlmacen {
+  id_inventario: number;
+  id_almacen: number;
+  id_ingrediente: number;
+  stock_actual: number;
+  fecha_actualizacion: string;
+  ingredientes: Ingrediente;
+  almacenes: Almacen;
+}
+
+export interface StockCritico {
+  almacen: string;
+  ingrediente: string;
+  stock_actual: number;
+  stock_minimo: number;
+  unidad_medida: string;
+  proveedor: string;
+  porcentaje_faltante: number;
+}
+
+export interface CreateIngredienteRequest {
+  nombre: string;
+  unidad_medida: string;
+  stock_minimo: number;
+  costo_unitario: number;
+  proveedor: string;
+  activo?: boolean;
+}
+
+export interface UpdateInventarioRequest {
+  stock_actual: number;
+}
+
+
+
+
+
+// src/types/api.ts - Agregar al final del archivo
+
+export interface Usuario {
+  id_usuario: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono: string | null;
+  id_rol: number;
+  activo: boolean;
+  fecha_registro: string;
+  ultimo_acceso: string | null;
+  roleName?: string;
+}
+export interface Rol {
+  id_rol: number;
+  nombre_rol: string;
+  descripcion: string;
+  activo: boolean;
+}
+
+export interface SesionUsuario {
+  id_sesion: number;
+  id_usuario: number;
+  fecha_inicio: string;
+  fecha_fin: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  token_sesion: string | null;
+  activa: boolean;
+  usuarios: Usuario;
+}
+
+export interface HistorialAccion {
+  id_historial: number;
+  id_usuario: number;
+  id_sesion: number | null;
+  tabla_afectada: string;
+  id_registro: number | null;
+  accion: 'INSERT' | 'UPDATE' | 'DELETE' | 'SELECT' | 'LOGIN' | 'LOGOUT';
+  datos_anteriores: any;
+  datos_nuevos: any;
+  descripcion: string | null;
+  fecha_accion: string;
+  ip_address: string | null;
+  usuarios: Usuario;
+}
+
+export interface HistorialCliente {
+  id_historial_cliente: number;
+  id_cliente: number;
+  tipo_actividad: string;
+  id_referencia: number | null;
+  descripcion: string;
+  detalles: any;
+  fecha_actividad: string;
+  ip_address: string | null;
+  dispositivo: string | null;
+  clientes: {
+    id_cliente: number;
+    nombre: string;
+    apellido: string | null;
+    email: string | null;
+  };
+}

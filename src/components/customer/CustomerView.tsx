@@ -10,6 +10,7 @@ import { CartItem } from '@/types';
 import { getProducts } from '@/api/products';
 import { EditProfileModal } from './EditProfileModal';
 import { getIdProductoTamano } from '@/utils/pedido'; // <-- import agregado
+import CustomerFooter from './CustomerFooter';
 
 type View = SectionId | 'cart';
 
@@ -176,6 +177,7 @@ export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileC
           onCheckout={handleCheckout}
           onBackToMenu={() => setCurrentView('menu')}
         />
+        
       );
     }
 
@@ -223,6 +225,7 @@ export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileC
         isOpen={showEditProfile}
         onClose={() => setShowEditProfile(false)}
       />
+      <CustomerFooter onNavigate={(section) => setCurrentView(section)} />
     </>
   );
 }

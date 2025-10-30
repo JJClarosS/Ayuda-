@@ -6,7 +6,7 @@ const API = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
+-
 // Interceptor para agregar el token de autenticación
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');

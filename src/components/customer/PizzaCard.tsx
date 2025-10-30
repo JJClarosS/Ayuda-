@@ -153,24 +153,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
               </div>
             </div>
 
-            <div>
-              <Label className="text-orange-900 mb-3 block">Ingredientes extra (+€1.50 c/u)</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {availableExtras.map((extra) => (
-                  <div key={extra} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={extra}
-                      checked={selectedExtras.includes(extra)}
-                      onCheckedChange={() => toggleExtra(extra)}
-                    />
-                    <label htmlFor={extra} className="text-orange-700 cursor-pointer">
-                      {extra}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+            
             <div>
               <Label className="text-orange-900 mb-3 block">Cantidad</Label>
               <div className="flex items-center gap-4">

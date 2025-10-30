@@ -1,7 +1,7 @@
 // src/components/admin/Inventory.tsx
 import { AlertTriangle, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { inventarioService } from '@/services/inventarioService';
+import inventarioService, { Inventario } from '@/services/inventarioService';
 import type { InventarioAlmacen, StockCritico } from '../../types/api';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -21,21 +21,57 @@ export function Inventory() {
     loadInventory();
   }, []);
 
+
+  const parseDecimal = (val: any): number => {
+  if (val == null) return 0;
+  if (typeof val === "number") return val;
+  if (typeof val === "string") return Number(val);
+  if (typeof val === "object") {
+    if ("d" in val && Array.isArray(val.d)) return Number(val.d.join(""));
+    if ("value" in val) return Number(val.value);
+  }
+  return 0;
+};
+
+
   const loadInventory = async () => {
-    try {
-      setLoading(true);
-      const [inventariosData, stockCriticoData] = await Promise.all([
-        inventarioService.getAllInventarios(),
-        inventarioService.getStockCritico(),
-      ]);
-      setInventarios(inventariosData);
-      setStockCritico(stockCriticoData);
-    } catch (error) {
-      console.error('Error loading inventory:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    const [inventariosData, stockCriticoData] = await Promise.all([
+      inventarioService.getAllInventarios(),
+      inventarioService.getStockCritico(),
+    ]);
+
+    // 🧩 Normalizar los Decimals del backend (Prisma)
+    const inventariosNormalizados = inventariosData.map((item: any) => ({
+      ...item,
+      stock_actual: parseDecimal(item.stock_actual),
+      ingredientes: {
+        ...item.ingredientes,
+        stock_minimo: parseDecimal(item.ingredientes?.stock_minimo),
+        costo_unitario: parseDecimal(item.ingredientes?.costo_unitario),
+      },
+      almacenes: {
+        ...item.almacenes,
+      },
+    }));
+
+    const stockCriticoNormalizado = stockCriticoData.map((item: any) => ({
+      ...item,
+      stock_actual: parseDecimal(item.stock_actual),
+      stock_minimo: parseDecimal(item.stock_minimo),
+      porcentaje_faltante: parseDecimal(item.porcentaje_faltante),
+    }));
+
+    setInventarios(inventariosNormalizados);
+    setStockCritico(stockCriticoNormalizado);
+  } catch (error) {
+    console.error("Error loading inventory:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (loading) {
     return (
