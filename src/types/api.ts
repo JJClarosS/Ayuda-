@@ -119,3 +119,69 @@ export interface Cliente {
   puntos_fidelidad: number;
   activo: boolean;
 }
+
+
+
+
+
+
+
+// Agregar al archivo existente src/types/api.ts
+
+// src/types/api.ts - Agregar al final del archivo
+
+export interface Ingrediente {
+  id_ingrediente: number;
+  nombre: string;
+  unidad_medida: string;
+  stock_minimo: number;
+  costo_unitario: number;
+  proveedor: string;
+  fecha_actualizacion: string;
+  activo: boolean;
+}
+
+export interface Almacen {
+  id_almacen: number;
+  nombre: string;
+  direccion: string;
+  ciudad: string;
+  telefono: string | null;
+  responsable: string | null;
+  tipo: string;
+  activo: boolean;
+  fecha_apertura: string;
+}
+
+export interface InventarioAlmacen {
+  id_inventario: number;
+  id_almacen: number;
+  id_ingrediente: number;
+  stock_actual: number;
+  fecha_actualizacion: string;
+  ingredientes: Ingrediente;
+  almacenes: Almacen;
+}
+
+export interface StockCritico {
+  almacen: string;
+  ingrediente: string;
+  stock_actual: number;
+  stock_minimo: number;
+  unidad_medida: string;
+  proveedor: string;
+  porcentaje_faltante: number;
+}
+
+export interface CreateIngredienteRequest {
+  nombre: string;
+  unidad_medida: string;
+  stock_minimo: number;
+  costo_unitario: number;
+  proveedor: string;
+  activo?: boolean;
+}
+
+export interface UpdateInventarioRequest {
+  stock_actual: number;
+}
