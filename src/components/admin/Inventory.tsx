@@ -11,6 +11,19 @@ import { Progress } from '../ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { AddIngredientForm } from './AddIngredientForm';
 
+// Función helper para convertir valores Decimal de Prisma a número
+const toNumber = (value: any): number => {
+  if (typeof value === 'number') return value;
+  if (value && typeof value === 'object' && 's' in value && 'e' in value && 'd' in value) {
+    // Formato Decimal de Prisma: {s: signo, e: exponente, d: dígitos}
+    const sign = value.s === 1 ? 1 : -1;
+    const digits = value.d.join('');
+    const number = parseFloat(digits) * Math.pow(10, value.e - digits.length + 1);
+    return sign * number;
+  }
+  return parseFloat(value) || 0;
+};
+
 export function Inventory() {
   const [inventarios, setInventarios] = useState<InventarioAlmacen[]>([]);
   const [stockCritico, setStockCritico] = useState<StockCritico[]>([]);
@@ -24,12 +37,37 @@ export function Inventory() {
   const loadInventory = async () => {
     try {
       setLoading(true);
-      const [inventariosData, stockCriticoData] = await Promise.all([
-        inventarioService.getAllInventarios(),
-        inventarioService.getStockCritico(),
-      ]);
+      
+      // Cargar inventarios
+      const inventariosData = await inventarioService.getAllInventarios();
       setInventarios(inventariosData);
-      setStockCritico(stockCriticoData);
+      
+      // Intentar cargar stock crítico, pero no fallar si no existe
+      try {
+        const stockCriticoData = await inventarioService.getStockCritico();
+        setStockCritico(stockCriticoData);
+      } catch (error: any) {
+        if (error?.response?.status === 404) {
+          console.warn('Endpoint stock_critico no disponible, calculando localmente');
+          // Calcular stock crítico localmente
+          const critico = inventariosData.filter(item => {
+            const stockActual = toNumber(item.stock_actual);
+            const stockMinimo = toNumber(item.ingredientes.stock_minimo);
+            return stockActual < stockMinimo;
+          }).map(item => ({
+            almacen: item.almacenes.nombre,
+            ingrediente: item.ingredientes.nombre,
+            stock_actual: toNumber(item.stock_actual),
+            stock_minimo: toNumber(item.ingredientes.stock_minimo),
+            unidad_medida: item.ingredientes.unidad_medida,
+            proveedor: item.ingredientes.proveedor,
+            porcentaje_faltante: ((toNumber(item.ingredientes.stock_minimo) - toNumber(item.stock_actual)) / toNumber(item.ingredientes.stock_minimo)) * 100
+          }));
+          setStockCritico(critico);
+        } else {
+          throw error;
+        }
+      }
     } catch (error) {
       console.error('Error loading inventory:', error);
     } finally {
@@ -98,13 +136,13 @@ export function Inventory() {
                   <div>
                     <p className="text-red-900 font-semibold">{item.ingrediente}</p>
                     <p className="text-red-600 text-sm">
-                      {item.almacen} - Stock: {Number(item.stock_actual).toFixed(2)}{item.unidad_medida} 
-                      (Mínimo: {Number(item.stock_minimo).toFixed(2)}{item.unidad_medida})
+                      {item.almacen} - Stock: {toNumber(item.stock_actual).toFixed(2)}{item.unidad_medida} 
+                      (Mínimo: {toNumber(item.stock_minimo).toFixed(2)}{item.unidad_medida})
                     </p>
                     <p className="text-red-500 text-xs">Proveedor: {item.proveedor}</p>
                   </div>
                   <Badge variant="destructive">
-                    {Number(item.porcentaje_faltante).toFixed(0)}% bajo
+                    {toNumber(item.porcentaje_faltante).toFixed(0)}% bajo
                   </Badge>
                 </div>
               ))}
@@ -189,8 +227,10 @@ export function Inventory() {
               </TableHeader>
               <TableBody>
                 {inventarios.map((item) => {
-                  const stockPercentage = (Number(item.stock_actual) / Number(item.ingredientes.stock_minimo)) * 100;
-                  const isLowStock = Number(item.stock_actual) < Number(item.ingredientes.stock_minimo);
+                  const stockActual = toNumber(item.stock_actual);
+                  const stockMinimo = toNumber(item.ingredientes.stock_minimo);
+                  const stockPercentage = (stockActual / stockMinimo) * 100;
+                  const isLowStock = stockActual < stockMinimo;
 
                   return (
                     <TableRow key={item.id_inventario} className="border-border">
@@ -201,10 +241,10 @@ export function Inventory() {
                         {item.ingredientes.nombre}
                       </TableCell>
                       <TableCell className="text-card-foreground">
-                        {Number(item.stock_actual).toFixed(2)} {item.ingredientes.unidad_medida}
+                        {stockActual.toFixed(2)} {item.ingredientes.unidad_medida}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {Number(item.ingredientes.stock_minimo).toFixed(2)} {item.ingredientes.unidad_medida}
+                        {stockMinimo.toFixed(2)} {item.ingredientes.unidad_medida}
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1 w-32">
