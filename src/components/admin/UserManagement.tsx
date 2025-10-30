@@ -1,4 +1,3 @@
-// src/components/admin/UserManagement.tsx
 import { AlertCircle, Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import userService from '../../services/userService';
@@ -20,7 +19,10 @@ export function UserManagement() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState<string>('');
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
+  const [editingUser, setEditingUser] = useState<Usuario | null>(null);
+  
   const [newUser, setNewUser] = useState({
     nombre: '',
     apellido: '',
@@ -70,7 +72,7 @@ export function UserManagement() {
       });
       
       await loadData();
-      setIsDialogOpen(false);
+      setIsCreateDialogOpen(false);
       setNewUser({
         nombre: '',
         apellido: '',
@@ -81,6 +83,35 @@ export function UserManagement() {
       });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al crear usuario');
+    }
+  };
+
+  const handleEdit = (user: Usuario) => {
+    setEditingUser(user);
+    setIsEditDialogOpen(true);
+    setError(null);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    
+    setError(null);
+    
+    try {
+      await userService.update(editingUser.id_usuario, {
+        nombre: editingUser.nombre,
+        apellido: editingUser.apellido,
+        email: editingUser.email,
+        telefono: editingUser.telefono,
+        id_rol: editingUser.id_rol,
+      });
+      
+      await loadData();
+      setIsEditDialogOpen(false);
+      setEditingUser(null);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al actualizar usuario');
     }
   };
 
@@ -121,7 +152,8 @@ export function UserManagement() {
           <p className="text-muted-foreground">Administra usuarios y sus roles</p>
         </div>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        {/* Dialog para crear */}
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange-600 hover:bg-orange-700">
               <Plus className="w-4 h-4 mr-2" />
@@ -216,7 +248,7 @@ export function UserManagement() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => setIsCreateDialogOpen(false)}
                 >
                   Cancelar
                 </Button>
@@ -231,6 +263,105 @@ export function UserManagement() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Dialog para editar */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar Usuario</DialogTitle>
+          </DialogHeader>
+          
+          {editingUser && (
+            <form onSubmit={handleUpdate} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-nombre">Nombre *</Label>
+                  <Input
+                    id="edit-nombre"
+                    value={editingUser.nombre}
+                    onChange={(e) => setEditingUser({ ...editingUser, nombre: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-apellido">Apellido</Label>
+                  <Input
+                    id="edit-apellido"
+                    value={editingUser.apellido}
+                    onChange={(e) => setEditingUser({ ...editingUser, apellido: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email">Email *</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={editingUser.email}
+                    onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-telefono">Teléfono</Label>
+                  <Input
+                    id="edit-telefono"
+                    value={editingUser.telefono || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, telefono: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-rol">Rol *</Label>
+                  <Select 
+                    value={editingUser.id_rol.toString()} 
+                    onValueChange={(value: string) => setEditingUser({ ...editingUser, id_rol: parseInt(value) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((r) => (
+                        <SelectItem key={r.id_rol} value={r.id_rol.toString()}>
+                          {r.nombre_rol}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setEditingUser(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  Actualizar Usuario
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -360,7 +491,12 @@ export function UserManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" title="Editar">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          title="Editar"
+                          onClick={() => handleEdit(u)}
+                        >
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button 

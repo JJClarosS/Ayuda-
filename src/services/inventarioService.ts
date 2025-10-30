@@ -63,4 +63,16 @@ export const inventarioService = {
   async deleteIngrediente(id: number): Promise<void> {
     await api.delete(`/ingredientes/${id}`);
   },
+
+  /**
+   * Crear nueva entrada de inventario
+   */
+  async createInventarioEntry(data: {
+    id_almacen: number;
+    id_ingrediente: number;
+    stock_actual: number;
+  }): Promise<InventarioAlmacen> {
+    const response = await api.post<InventarioAlmacen>('/inventario', data);
+    return response.data;
+  }
 };
