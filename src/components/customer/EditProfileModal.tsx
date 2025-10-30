@@ -44,7 +44,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     }
   }, [user, isOpen]);
 
-  if (!isOpen || !user || !user.id) {
+  if (!isOpen || !user ) {
   return null; // Evita errores
 }
 
