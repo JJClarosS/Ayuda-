@@ -1,81 +1,78 @@
 // src/services/inventarioService.ts
-import axios, { AxiosError } from "axios";
+import type {
+    CreateIngredienteRequest,
+    Ingrediente,
+    InventarioAlmacen,
+    StockCritico,
+    UpdateInventarioRequest
+} from '../types/api';
+import api from './api';
 
-export interface Inventario {
-  id: number;
-  stock_actual: number;
-  ingredientes: {
-    id: number;
-    nombre: string;
-    unidad_medida: string;
-    stock_minimo: number;
-    costo_unitario: number;
-  };
-  almacenes: {
-    id: number;
-    nombre: string;
-    ubicacion: string;
-  };
-}
-
-export interface StockCritico {
-  id: number;
-  nombre_ingrediente: string;
-  stock_actual: number;
-  stock_minimo: number;
-  porcentaje_faltante: number;
-}
-
-const API_BASE = "http://localhost:3001/api";
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-const inventarioService = {
-  async getAllInventarios(): Promise<Inventario[]> {
-    try {
-      const res = await axios.get(`${API_BASE}/inventario`, {
-      headers: getAuthHeaders(),
-    });
-      return res.data;
-    } catch (error) {
-      handleAxiosError(error, "inventario");
-      return [];
-    }
+export const inventarioService = {
+  /**
+   * Obtener todos los ingredientes
+   */
+  async getAllIngredientes(): Promise<Ingrediente[]> {
+    const response = await api.get<Ingrediente[]>('/ingredientes');
+    return response.data;
   },
 
+  /**
+   * Obtener todos los inventarios
+   */
+  async getAllInventarios(): Promise<InventarioAlmacen[]> {
+    const response = await api.get<InventarioAlmacen[]>('/inventario');
+    return response.data;
+  },
+
+  /**
+   * Obtener stock crítico (vista SQL)
+   */
   async getStockCritico(): Promise<StockCritico[]> {
-    try {
-      const res = await axios.get(`${API_BASE}/stock-critico`, {
-      headers: getAuthHeaders(),
-    });
-      return res.data;
-    } catch (error) {
-      handleAxiosError(error, "stock-critico");
-      return [];
-    }
+    const response = await api.get<StockCritico[]>('/stock-critico');
+    return response.data;
   },
-};
 
-// 🔍 Manejo centralizado de errores
-function handleAxiosError(error: unknown, endpoint: string): void {
-  if (axios.isAxiosError(error)) {
-    const err = error as AxiosError;
-    if (err.response) {
-      console.error(
-        `❌ Error ${err.response.status} al cargar /api/${endpoint}:`,
-        err.response.data
-      );
-    } else if (err.request) {
-      console.error(`⚠️ No se recibió respuesta del servidor en /api/${endpoint}`);
-    } else {
-      console.error(`⚙️ Error al configurar la solicitud /api/${endpoint}:`, err.message);
-    }
-  } else {
-    console.error(`Error desconocido en /api/${endpoint}:`, error);
+  /**
+   * Crear nuevo ingrediente
+   */
+  async createIngrediente(data: CreateIngredienteRequest): Promise<Ingrediente> {
+    const response = await api.post<Ingrediente>('/ingredientes', data);
+    return response.data;
+  },
+
+  /**
+   * Actualizar ingrediente
+   */
+  async updateIngrediente(id: number, data: Partial<CreateIngredienteRequest>): Promise<Ingrediente> {
+    const response = await api.patch<Ingrediente>(`/ingredientes/${id}`, data);
+    return response.data;
+  },
+
+  /**
+   * Actualizar stock de inventario
+   */
+  async updateInventario(id_inventario: number, data: UpdateInventarioRequest): Promise<InventarioAlmacen> {
+    const response = await api.patch<InventarioAlmacen>(`/inventario/${id_inventario}`, data);
+    return response.data;
+  },
+
+  /**
+   * Eliminar ingrediente (soft delete)
+   */
+  async deleteIngrediente(id: number): Promise<void> {
+    await api.delete(`/ingredientes/${id}`);
+  },
+
+  /**
+   * Crear nueva entrada de inventario
+   */
+  async createInventarioEntry(data: {
+    id_almacen: number;
+    id_ingrediente: number;
+    stock_actual: number;
+  }): Promise<InventarioAlmacen> {
+    const response = await api.post<InventarioAlmacen>('/inventario', data);
+    return response.data;
   }
-}
-
-export default inventarioService;
+};

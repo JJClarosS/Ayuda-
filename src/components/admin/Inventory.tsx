@@ -1,7 +1,7 @@
 // src/components/admin/Inventory.tsx
 import { AlertTriangle, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import inventarioService, { Inventario } from '@/services/inventarioService';
+import { inventarioService } from '@/services/inventarioService';
 import type { InventarioAlmacen, StockCritico } from '../../types/api';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';

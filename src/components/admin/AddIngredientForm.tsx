@@ -32,38 +32,48 @@ export function AddIngredientForm({ onSuccess, onCancel }: AddIngredientFormProp
   const [costoUnitario, setCostoUnitario] = useState('');
   const [proveedor, setProveedor] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  // src/components/admin/AddIngredientForm.tsx - handleSubmit actualizado
 
-    try {
-      if (!nombre || !unidadMedida || !stockMinimo || !costoUnitario || !proveedor) {
-        setError('Por favor completa todos los campos');
-        setLoading(false);
-        return;
-      }
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-      const data = {
-        nombre,
-        unidad_medida: unidadMedida,
-        stock_minimo: parseFloat(stockMinimo),
-        costo_unitario: parseFloat(costoUnitario),
-        proveedor,
-        activo: true,
-      };
-
-      const { inventarioService } = await import('@/services/inventarioService');
-      await inventarioService.createIngrediente(data);
-
-      onSuccess();
-    } catch (err: any) {
-      console.error('Error creating ingredient:', err);
-      setError(err.response?.data?.message || 'Error al crear el ingrediente');
-    } finally {
+  try {
+    if (!nombre || !unidadMedida || !stockMinimo || !costoUnitario || !proveedor) {
+      setError('Por favor completa todos los campos');
       setLoading(false);
+      return;
     }
-  };
+
+    const data = {
+      nombre,
+      unidad_medida: unidadMedida,
+      stock_minimo: parseFloat(stockMinimo),
+      costo_unitario: parseFloat(costoUnitario),
+      proveedor,
+      activo: true,
+    };
+
+    const { inventarioService } = await import('../../services/inventarioService');
+    const nuevoIngrediente = await inventarioService.createIngrediente(data);
+    
+    // Crear entrada de inventario para todos los almacenes activos
+    // Por ahora, creamos solo para el almacén 1 con stock inicial = stock_minimo
+    await inventarioService.createInventarioEntry({
+      id_almacen: 1,
+      id_ingrediente: nuevoIngrediente.id_ingrediente,
+      stock_actual: parseFloat(stockMinimo),
+    });
+
+    onSuccess();
+  } catch (err: any) {
+    console.error('Error creating ingredient:', err);
+    setError(err.response?.data?.message || 'Error al crear el ingrediente');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
