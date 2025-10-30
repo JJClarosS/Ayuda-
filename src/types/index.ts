@@ -12,6 +12,7 @@ export interface Pizza {
   available: boolean;
 }
 
+
 export interface Drink {
   id: string;
   name: string;
@@ -19,6 +20,7 @@ export interface Drink {
   price: number;
   image: string;
   category: string;
+  available?: boolean;
 }
 
 export interface Dessert {
@@ -28,6 +30,7 @@ export interface Dessert {
   price: number;
   image: string;
   category: string;
+  available?: boolean;
 }
 
 export interface Order {
