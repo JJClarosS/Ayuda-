@@ -45,4 +45,18 @@ export class InventarioService {
       SELECT * FROM vista_inventario_critico
     `;
   }
+
+  async create(data: { id_almacen: number; id_ingrediente: number; stock_actual: number }) {
+  return this.prisma.inventario_almacen.create({
+    data: {
+      id_almacen: data.id_almacen,
+      id_ingrediente: data.id_ingrediente,
+      stock_actual: data.stock_actual,
+    },
+    include: {
+      almacenes: true,
+      ingredientes: true,
+    },
+  });
+}
 }

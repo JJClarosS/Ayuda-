@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards, Post } from '@nestjs/common';
 import { InventarioService } from './inventario.service';
 import { UpdateInventarioDto } from './dto/update-inventario.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -18,6 +18,12 @@ export class InventarioController {
   findOne(@Param('id') id: string) {
     return this.inventarioService.findOne(+id);
   }
+
+  @Post()
+create(@Body() createInventarioDto: any) {
+  return this.inventarioService.create(createInventarioDto);
+}
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateInventarioDto: UpdateInventarioDto) {
