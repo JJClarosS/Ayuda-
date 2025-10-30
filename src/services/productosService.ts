@@ -65,23 +65,22 @@ export const productosService = {
    * Crear producto con tamaños (para pizzas principalmente)
    */
   async createWithSizes(
-    producto: CreateProductoPayload, 
-    tamanos: ProductoTamanoPayload[]
-  ): Promise<Producto> {
-    // Primero crear el producto
-    const newProducto = await this.create(producto);
-    
-    // Luego crear los tamaños
-    for (const tamano of tamanos) {
-      await api.post('/producto-tamanos', {
-        id_producto: newProducto.id_producto,
-        ...tamano
-      });
-    }
-    
-    // Retornar el producto completo con tamaños
-    return await this.getOne(newProducto.id_producto);
-  },
+  producto: CreateProductoPayload,
+  tamanos: ProductoTamanoPayload[]
+): Promise<Producto> {
+  const payload = {
+    ...producto,
+    producto_tamanos: tamanos.map(t => ({
+      id_tamano: t.id_tamano,
+      precio: t.precio,
+      disponible: t.disponible,
+      activo: t.activo,
+    })),
+  };
+
+  const response = await api.post<Producto>('/productos', payload);
+  return response.data;
+},
 
   async getOne(id: number): Promise<Producto> {
     const response = await api.get<Producto>(`/productos/${id}`);
