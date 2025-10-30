@@ -1,7 +1,4 @@
 // index.ts
-
-import { ReactNode } from "react";
-
 // frontend/src/types/index.ts
 export enum TipoPedido {
   LOCAL = 'Local',
@@ -17,7 +14,7 @@ export class DetallePedidoItem {
 }
 
 export class CreatePedidoDto {
-  id_cliente?: number;
+  id_cliente!: number;
   id_empleado!: number;
   id_mesa?: number;
   id_almacen!: number;
@@ -48,7 +45,11 @@ export interface Pizza {
   image: string | null; // imagen_url
   categoryId: string; // id_categoria
   categoryName: string; // categorias.nombre
-  sizes: ProductSize[]; // producto_tamanos
+  sizes: {
+    small: number;
+    medium: number;
+    large: number;
+  }; // producto_tamanos
   available: boolean; // disponible
 }
 
@@ -77,12 +78,13 @@ export interface Dessert {
 export interface CartItem {
   productId: string;
   name: string;
-  image: string | null; // Cambiado para permitir null
-  size?: string; // Para pizzas (Pequeña, Mediana, Grande)
+  image: string | null;
+  size?: string;
   quantity: number;
-  price: number; // Precio total (base + extras)
-  //extras?: string[]; // Extras para pizzas
+  price: number;
+  productSizeId?: string; // <-- nuevo
 }
+
 
 
 // ... (Resto de las interfaces: BackendPrice, ProductSize, Pizza, Drink, Dessert, CartItem)
@@ -144,7 +146,6 @@ export interface Reservation {
 
 // Interfaz para clientes
 export interface Customer {
-  name: ReactNode;
   id: string; // id_cliente
   firstName: string; // nombre
   lastName?: string; // apellido, nullable
@@ -232,17 +233,18 @@ export type UserRole = 'Administrador' | 'Cajero' | 'Cliente' | 'Gerente' | 'Rep
 
 // Interfaz para usuarios
 export interface User {
-  id: string; // id_usuario
-  firstName: string; // nombre
-  lastName: string; // apellido
-  username: string; // Derivado de email o campo adicional
-  email: string; // email
-  phone?: string; // telefono, nullable
-  role: UserRole; // nombre_rol from roles
-  active: boolean; // activo
-  registrationDate: string; // fecha_registro
-  lastAccess?: string; // ultimo_acceso
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  phone?: string;
+  role: string;
+  active: boolean;
+  registrationDate: string;
+  lastAccess?: string;
 }
+
 
 // Interfaz para tipos de pizza
 export interface PizzaType {

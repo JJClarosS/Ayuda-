@@ -9,13 +9,14 @@ import { AboutUsSection } from './AboutUs';
 import { CartItem } from '@/types';
 import { getProducts } from '@/api/products';
 import { EditProfileModal } from './EditProfileModal';
+import { getIdProductoTamano } from '@/utils/pedido'; // <-- import agregado
 
 type View = SectionId | 'cart';
 
 interface CustomerViewProps {
-  onLoginClick: () => void;   // NUEVA PROP
+  onLoginClick: () => void;
   isAuthenticated?: boolean;
-  onProfileClick: () => void;  // OPCIONAL: si quieres ocultar header cuando está logueado
+  onProfileClick: () => void;
 }
 
 export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileClick }: CustomerViewProps) {
@@ -23,81 +24,116 @@ export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileC
   const [currentView, setCurrentView] = useState<View>('menu');
   const [showEditProfile, setShowEditProfile] = useState(false);
 
-  // ... (tus funciones addToCart, removeFromCart, etc. siguen igual)
-
+  /**
+   * Añade una pizza al carrito
+   * - Guarda el precio POR UNIDAD en cartItem.price
+   * - Guarda productSizeId si se logra resolver
+   */
   const addToCart = async (
     pizzaId: string,
     size: 'small' | 'medium' | 'large',
     quantity: number,
-    extras: string[]
+    extras: string[] = []
   ) => {
     try {
       const { pizzas } = await getProducts();
       const pizza = pizzas.find((p) => p.id === pizzaId);
       if (!pizza) return;
 
-      const sizeMap: { [key in 'small' | 'medium' | 'large']: string } = {
-        small: '1',
-        medium: '2',
-        large: '3',
+      // Mapa de nombres legibles para mostrar
+      const sizeLabel = size === 'small' ? 'Pequeña' : size === 'medium' ? 'Mediana' : 'Grande';
+
+      // Obtener precio base según el objeto sizes del tipo Pizza
+      const basePriceMap: Record<'small' | 'medium' | 'large', number> = {
+        small: pizza.sizes.small ?? 0,
+        medium: pizza.sizes.medium ?? 0,
+        large: pizza.sizes.large ?? 0,
       };
-      const selectedSize = pizza.sizes.find((s) => s.id_tamano === sizeMap[size]);
-      const basePrice = selectedSize?.price || 0;
-      const extrasPrice = extras.length * 1.5;
-      const totalPrice = (basePrice + extrasPrice) * quantity;
+
+      const basePrice = basePriceMap[size] ?? 0;
+      const extrasPrice = (extras?.length ?? 0) * 1.5; // ejemplo: cada extra 1.5€
+      const unitPrice = basePrice + extrasPrice; // precio por unidad (sin multiplicar por quantity)
+
+      // Intentar resolver id_producto_tamano (puede devolver number | undefined)
+      const resolvedId = getIdProductoTamano(pizza.id, sizeLabel);
+      const productSizeId = resolvedId ? String(resolvedId) : undefined;
 
       const cartItem: CartItem = {
         productId: pizza.id,
         name: pizza.name,
-        image: pizza.image || '/placeholder.png',
-        size: size === 'small' ? 'Pequeña' : size === 'medium' ? 'Mediana' : 'Grande',
+        image: pizza.image ?? '/placeholder.png',
+        size: sizeLabel,
         quantity,
-        price: totalPrice,
+        price: unitPrice, // guardamos precio por unidad
+        productSizeId,    // <-- nuevo campo opcional
       };
-      setCartItems([...cartItems, cartItem]);
+
+      // Usar updater funcional para evitar condiciones de carrera
+      setCartItems((prev) => [...prev, cartItem]);
     } catch (err) {
       console.error('Error al agregar pizza al carrito:', err);
     }
   };
 
+  /**
+   * Añade bebida al carrito (precio por unidad)
+   */
   const addDrinkToCart = async (drinkId: string) => {
     try {
       const { drinks } = await getProducts();
       const drink = drinks.find((d) => d.id === drinkId);
       if (!drink) return;
 
+      // Resolver id_producto_tamano para tamaño "Único"
+      const resolvedId = getIdProductoTamano(drink.id, 'Único');
+      const productSizeId = resolvedId ? String(resolvedId) : undefined;
+
       const cartItem: CartItem = {
         productId: drink.id,
         name: drink.name,
-        image: drink.image || '/placeholder.png',
+        image: drink.image ?? '/placeholder.png',
         quantity: 1,
-        price: drink.price || 0,
+        price: drink.price ?? 0, // precio por unidad
+        productSizeId,
       };
-      setCartItems([...cartItems, cartItem]);
+
+      setCartItems((prev) => [...prev, cartItem]);
     } catch (err) {
       console.error('Error al agregar bebida al carrito:', err);
     }
   };
 
+  /**
+   * Añade postre al carrito (precio por unidad)
+   */
   const addDessertToCart = async (dessertId: string) => {
     try {
       const { desserts } = await getProducts();
       const dessert = desserts.find((d) => d.id === dessertId);
       if (!dessert) return;
 
+      // Resolver id_producto_tamano para tamaño "Único"
+      const resolvedId = getIdProductoTamano(dessert.id, 'Único');
+      const productSizeId = resolvedId ? String(resolvedId) : undefined;
+
       const cartItem: CartItem = {
         productId: dessert.id,
         name: dessert.name,
-        image: dessert.image || '/placeholder.png',
+        image: dessert.image ?? '/placeholder.png',
         quantity: 1,
-        price: dessert.price || 0,
+        price: dessert.price ?? 0,
+        productSizeId,
       };
-      setCartItems([...cartItems, cartItem]);
+
+      setCartItems((prev) => [...prev, cartItem]);
     } catch (err) {
       console.error('Error al agregar postre al carrito:', err);
     }
   };
 
+  /**
+   * Elimina del carrito el primer item que cumpla productId (+ size opcional)
+   */
   const removeFromCart = (productId: string, size?: string) => {
     const index = cartItems.findIndex(
       (item) => item.productId === productId && (!size || item.size === size)
@@ -111,8 +147,14 @@ export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileC
 
   const clearCart = () => setCartItems([]);
 
+  /**
+   * Checkout: ahora calculamos correctamente sumando price * quantity (price = unidad)
+   */
   const handleCheckout = (paymentMethod: string, deliveryAddress: string, comments: string) => {
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) + 3.5;
+    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const deliveryFee = 3.5;
+    const total = subtotal + deliveryFee;
+
     alert(
       `¡Pedido confirmado!\n\n` +
         `Método de pago: ${paymentMethod}\n` +
@@ -172,13 +214,11 @@ export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileC
         activeSection={currentView === 'cart' ? 'menu' : currentView}
         isAuthenticated={isAuthenticated}
         onLoginClick={onLoginClick}
-        onProfileClick={() => setShowEditProfile(true)}// <-- Pasa función
-        
+        onProfileClick={() => setShowEditProfile(true)}
       />
 
       {renderContent()}
 
-      {/* Modal de Perfil */}
       <EditProfileModal
         isOpen={showEditProfile}
         onClose={() => setShowEditProfile(false)}
@@ -186,3 +226,4 @@ export function CustomerView({ onLoginClick, isAuthenticated = false, onProfileC
     </>
   );
 }
+  

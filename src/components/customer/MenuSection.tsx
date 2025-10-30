@@ -42,19 +42,6 @@ export function MenuSection({ onAddToCart, onAddDrinkToCart, onAddDessertToCart 
     fetchData();
   }, []);
 
-  const mapIdTamanoToSize = (id_tamano: string): 'small' | 'medium' | 'large' => {
-    switch (id_tamano) {
-      case '1':
-        return 'small';
-      case '2':
-        return 'medium';
-      case '3':
-        return 'large';
-      default:
-        return 'medium';
-    }
-  };
-
   if (loading) {
     return <div className="p-8 text-center">Cargando menú...</div>;
   }
@@ -111,9 +98,7 @@ export function MenuSection({ onAddToCart, onAddDrinkToCart, onAddDessertToCart 
               <PizzaCard
                 key={pizza.id}
                 pizza={pizza}
-                onAddToCart={(pizzaId, sizeId, quantity, extras) =>
-                  onAddToCart(pizzaId, mapIdTamanoToSize(sizeId), quantity, extras)
-                }
+                onAddToCart={onAddToCart} // ahora ya recibe 'small'|'medium'|'large'
               />
             ))}
           </div>

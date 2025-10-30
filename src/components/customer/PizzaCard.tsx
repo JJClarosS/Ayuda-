@@ -17,43 +17,40 @@ interface PizzaCardProps {
 
 export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<string>(pizza.sizes[0]?.id_tamano || '2');
+  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
 
-  const mapIdTamanoToSize = (id_tamano: string): 'small' | 'medium' | 'large' => {
-    switch (id_tamano) {
-      case '1':
-        return 'small';
-      case '2':
-        return 'medium';
-      case '3':
-        return 'large';
-      default:
-        return 'medium';
-    }
+  // Inicializar tamaño seleccionado si hay alguno con precio
+  if (!pizza.sizes) {
+    pizza.sizes = { small: 0, medium: 0, large: 0 }; // fallback por seguridad
+  }
+
+  const getSizeLabel = (size: 'small' | 'medium' | 'large') => {
+    if (size === 'small') return 'Pequeña';
+    if (size === 'medium') return 'Mediana';
+    return 'Grande';
   };
 
-  const getSizeLabel = (id_tamano: string): string => {
-    switch (id_tamano) {
-      case '1':
-        return 'Pequeña';
-      case '2':
-        return 'Mediana';
-      case '3':
-        return 'Grande';
-      default:
-        return 'Mediana';
-    }
+  const sizeKeys: ('small' | 'medium' | 'large')[] = ['small', 'medium', 'large'];
+
+  const isSizeAvailable = (size: 'small' | 'medium' | 'large') => {
+    const price = pizza.sizes[size];
+    return typeof price === 'number' && price > 0;
   };
 
-  const handleAddToCart = () => {
-    const size = mapIdTamanoToSize(selectedSize);
-    onAddToCart(pizza.id, size, quantity, selectedExtras);
-    setIsDialogOpen(false);
-    setSelectedSize(pizza.sizes[0]?.id_tamano || '2');
-    setSelectedExtras([]);
-    setQuantity(1);
+  const getCurrentUnitPrice = () => {
+    const base = pizza.sizes[selectedSize] ?? 0;
+    const extrasPrice = (selectedExtras?.length ?? 0) * 1.5;
+    return base + extrasPrice;
+  };
+
+  const getCurrentPrice = () => getCurrentUnitPrice() * quantity;
+
+  const getMinSizePrice = () => {
+    const prices = sizeKeys.map(k => pizza.sizes[k] ?? 0).filter(p => p > 0);
+    if (prices.length === 0) return 0;
+    return Math.min(...prices);
   };
 
   const toggleExtra = (extra: string) => {
@@ -62,11 +59,15 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
     );
   };
 
-  const getCurrentPrice = () => {
-    const selectedSizeObj = pizza.sizes.find((size) => size.id_tamano === selectedSize);
-    const basePrice = selectedSizeObj?.price || 0;
-    const extrasPrice = selectedExtras.length * 1.5;
-    return (basePrice + extrasPrice) * quantity;
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    // Si el tamaño seleccionado no está disponible, no agregar
+    if (!isSizeAvailable(selectedSize)) return;
+    onAddToCart(pizza.id, selectedSize, quantity, selectedExtras);
+    setIsDialogOpen(false);
+    setSelectedSize('medium');
+    setSelectedExtras([]);
+    setQuantity(1);
   };
 
   return (
@@ -94,9 +95,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
             <div>
               <p className="text-orange-700">Desde</p>
               <p className="text-orange-900">
-                {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-                  pizza.sizes.find((size) => size.id_tamano === '1')?.price || 0
-                )}
+                {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(getMinSizePrice())}
               </p>
             </div>
             <Button
@@ -118,7 +117,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-6 p-4">
             <div className="relative h-64 rounded-lg overflow-hidden">
               <ImageWithFallback
                 src={pizza.image || '/placeholder.png'}
@@ -130,23 +129,27 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
             <div>
               <Label className="text-orange-900 mb-3 block">Selecciona el tamaño</Label>
               <div className="grid grid-cols-3 gap-3">
-                {pizza.sizes.map((size) => (
-                  <button
-                    key={size.id_tamano}
-                    onClick={() => setSelectedSize(size.id_tamano)}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === size.id_tamano
-                        ? 'border-orange-600 bg-orange-50'
-                        : 'border-orange-200 hover:border-orange-400'
-                    }`}
-                    disabled={!size.available}
-                  >
-                    <p className="text-orange-900">{getSizeLabel(size.id_tamano)}</p>
-                    <p className="text-orange-600">
-                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(size.price || 0)}
-                    </p>
-                  </button>
-                ))}
+                {sizeKeys.map((key) => {
+                  const available = isSizeAvailable(key);
+                  const price = pizza.sizes[key] ?? 0;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => available && setSelectedSize(key)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        selectedSize === key
+                          ? 'border-orange-600 bg-orange-50'
+                          : 'border-orange-200 hover:border-orange-400'
+                      } ${!available ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={!available}
+                    >
+                      <p className="text-orange-900">{getSizeLabel(key)}</p>
+                      <p className="text-orange-600">
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(price || 0)}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
