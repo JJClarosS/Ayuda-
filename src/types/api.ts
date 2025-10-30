@@ -202,6 +202,13 @@ export interface Usuario {
   activo: boolean;
   fecha_registro: string;
   ultimo_acceso: string | null;
+  roleName?: string;
+}
+export interface Rol {
+  id_rol: number;
+  nombre_rol: string;
+  descripcion: string;
+  activo: boolean;
 }
 
 export interface SesionUsuario {

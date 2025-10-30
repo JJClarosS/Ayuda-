@@ -1,231 +1,395 @@
-import { useState } from 'react';
-import { User, UserRole } from '../../types';
-import { Users, UserPlus, Trash2, Edit3 } from 'lucide-react';
-import { cn } from '../ui/utils'; // <-- 1. IMPORTAR 'cn'
-
-// Datos simulados
-const MOCK_USERS_LIST: User[] = [
-  { id: 'u1', username: 'Admin User', email: 'admin@pizzeria.com', role: 'admin' },
-  { id: 'u2', username: 'Empleado Uno', email: 'empleado@pizzeria.com', role: 'employee' },
-  { id: 'u3', username: 'Cliente Fiel', email: 'cliente@pizzeria.com', role: 'customer' },
-  { id: 'u4', username: 'Marcia Gomez', email: 'marcia@cliente.com', role: 'customer' },
-  { id: 'u5', username: 'Pedro Pascal', email: 'pedro@empleado.com', role: 'employee' },
-];
-
-// Componente de UI reutilizable (similar a Shadcn Card)
-const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-white shadow-lg rounded-lg border border-gray-200 ${className}`}>
-    {children}
-  </div>
-);
-
-// --- 2. SECCIÓN CORREGIDA ---
-const CardHeader = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={cn("p-4 border-b border-gray-200 flex items-center justify-between gap-3", className)}>
-    {children}
-  </div>
-);
-const CardTitle = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={cn("flex items-center gap-3", className)}>
-    <h2 className="text-xl font-semibold text-gray-800">{children}</h2>
-  </div>
-);
-const CardContent = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <div className={cn("p-4", className)}>
-    {children}
-  </div>
-);
-// --- FIN SECCIÓN CORREGIDA ---
-
-// Componentes de Formulario reutilizables
-const FormField = ({ label, children }: { label: string, children: React.ReactNode }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-    {children}
-  </div>
-);
-const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-  <input {...props} className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 ${props.className}`} />
-);
-const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
-  <select {...props} className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 ${props.className}`} />
-);
-const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-4 py-2 rounded-md shadow-md text-white font-medium bg-orange-600 hover:bg-orange-700 transition-all ${props.className}`} />
-);
-
+// src/components/admin/UserManagement.tsx
+import { AlertCircle, Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import userService from '../../services/userService';
+import type { Rol, Usuario } from '../../types/api';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 
 export function UserManagement() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS_LIST);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState<string | null>(null); // Guarda el ID del usuario a editar
-  
-  // Estado para el formulario
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<UserRole>('customer');
+  const [users, setUsers] = useState<Usuario[]>([]);
+  const [roles, setRoles] = useState<Rol[]>([]);
+  const [selectedRole, setSelectedRole] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>('');
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [newUser, setNewUser] = useState({
+    nombre: '',
+    apellido: '',
+    email: '',
+    telefono: '',
+    password: '',
+    id_rol: 0,
+  });
 
-  // Función para resetear el formulario y cerrar
-  const resetForm = () => {
-    setIsFormOpen(false);
-    setIsEditing(null);
-    setUsername('');
-    setEmail('');
-    setRole('customer');
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [usersData, rolesData] = await Promise.all([
+        userService.getAll(),
+        userService.getRoles(),
+      ]);
+      setUsers(usersData);
+      setRoles(rolesData);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al cargar datos');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Manejar creación/edición de usuario
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !email) {
-      alert('Nombre y Email son obligatorios.');
-      return;
-    }
+    setError(null);
+    
+    try {
+      if (!newUser.nombre || !newUser.email || !newUser.password || newUser.id_rol === 0) {
+        setError('Por favor completa todos los campos obligatorios');
+        return;
+      }
 
-    if (isEditing) {
-      // Lógica de Modificación (Update)
-      setUsers(users.map(u => 
-        u.id === isEditing ? { ...u, username, email, role } : u
-      ));
-      alert('Usuario modificado con éxito.');
-    } else {
-      // Lógica de Alta (Create)
-      const newUser: User = {
-        id: `u${Date.now()}`, // ID simple para la simulación
-        username,
-        email,
-        role,
-      };
-      setUsers([newUser, ...users]);
-      alert('Usuario creado con éxito.');
+      await userService.create({
+        nombre: newUser.nombre,
+        apellido: newUser.apellido,
+        email: newUser.email,
+        telefono: newUser.telefono,
+        password: newUser.password,
+        id_rol: newUser.id_rol,
+      });
+      
+      await loadData();
+      setIsDialogOpen(false);
+      setNewUser({
+        nombre: '',
+        apellido: '',
+        email: '',
+        telefono: '',
+        password: '',
+        id_rol: 0,
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al crear usuario');
     }
-    resetForm();
   };
 
-  // Manejar Baja (Delete)
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres dar de baja a este usuario?')) {
-      setUsers(users.filter(u => u.id !== id));
-      alert('Usuario dado de baja.');
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
+    
+    try {
+      await userService.delete(id);
+      setUsers(users.filter((u) => u.id_usuario !== id));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al eliminar usuario');
     }
   };
 
-  // Manejar "Editar" (Carga datos en el formulario)
-  const handleEdit = (user: User) => {
-    setIsEditing(user.id);
-    setUsername(user.username);
-    setEmail(user.email);
-    setRole(user.role);
-    setIsFormOpen(true);
-  };
-  
-  // Helper de UI para el Rol
-  const RoleBadge = ({ role }: { role: UserRole }) => {
-    const colors: Record<UserRole, string> = {
-      admin: 'bg-red-100 text-red-800',
-      employee: 'bg-blue-100 text-blue-800',
-      customer: 'bg-green-100 text-green-800',
-    };
+  const filteredUsers = users.filter(
+    (user) =>
+      (user.nombre.toLowerCase().includes(search.toLowerCase()) ||
+       user.email.toLowerCase().includes(search.toLowerCase())) &&
+      (selectedRole === 0 || user.id_rol === selectedRole)
+  );
+
+  if (loading) {
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[role]}`}>
-        {role.charAt(0).toUpperCase() + role.slice(1)}
-      </span>
-    );
-  };
-
-  return (
-    <div className="p-8 bg-orange-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Gestión de Usuarios</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Columna de Formulario (Crear/Editar) */}
-        <div className="lg:col-span-1">
-          <Button 
-            onClick={() => { isFormOpen && !isEditing ? resetForm() : setIsFormOpen(true); setIsEditing(null); }}
-            className="w-full mb-4 flex items-center justify-center gap-2"
-          >
-            <UserPlus className="w-5 h-5" />
-            {isEditing ? 'Cancelar Edición' : (isFormOpen ? 'Cerrar Formulario' : 'Crear Nuevo Usuario')}
-          </Button>
-
-          {isFormOpen && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{isEditing ? 'Modificar Usuario' : 'Dar de Alta Usuario'}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <FormField label="Nombre de Usuario">
-                    <Input value={username} onChange={e => setUsername(e.target.value)} />
-                  </FormField>
-                  <FormField label="Email">
-                    <Input type="email" value={email} onChange={e => setEmail(e.target.value)} />
-                  </FormField>
-                  <FormField label="Rol de Usuario">
-                    <Select value={role} onChange={e => setRole(e.target.value as UserRole)}>
-                      <option value="customer">Cliente</option>
-                      <option value="employee">Empleado</option>
-                      <option value="admin">Admin</option>
-                    </Select>
-                  </FormField>
-                  <Button type="submit" className="w-full">
-                    {isEditing ? 'Guardar Cambios' : 'Crear Usuario'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Columna de Lista de Usuarios */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <Users className="w-5 h-5 text-orange-600" />
-                Lista de Usuarios ({users.length})
-              </CardTitle>
-            </CardHeader>
-            {/* Esta es la línea que causaba el error. Ahora funcionará. */}
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-full text-left text-sm">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-4 py-3 font-medium text-gray-600">Usuario</th>
-                      <th className="px-4 py-3 font-medium text-gray-600">Email</th>
-                      <th className="px-4 py-3 font-medium text-gray-600">Rol</th>
-                      <th className="px-4 py-3 font-medium text-gray-600">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {users.map(user => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 font-medium text-gray-900">{user.username}</td>
-                        <td className="px-4 py-3 text-gray-600">{user.email}</td>
-                        <td className="px-4 py-3">
-                          <RoleBadge role={user.role} />
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <button onClick={() => handleEdit(user)} className="text-blue-600 hover:text-blue-800">
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-800">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando usuarios...</p>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="p-8 space-y-6 bg-background">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-card-foreground mb-2">Gestión de Usuarios</h2>
+          <p className="text-muted-foreground">Administra usuarios y sus roles</p>
+        </div>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-orange-600 hover:bg-orange-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Nuevo Usuario
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleCreate} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nombre">Nombre *</Label>
+                  <Input
+                    id="nombre"
+                    value={newUser.nombre}
+                    onChange={(e) => setNewUser({ ...newUser, nombre: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="apellido">Apellido</Label>
+                  <Input
+                    id="apellido"
+                    value={newUser.apellido}
+                    onChange={(e) => setNewUser({ ...newUser, apellido: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telefono">Teléfono</Label>
+                  <Input
+                    id="telefono"
+                    value={newUser.telefono}
+                    onChange={(e) => setNewUser({ ...newUser, telefono: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="rol">Rol *</Label>
+                  <Select 
+                    value={newUser.id_rol.toString()} 
+                    onValueChange={(value: string) => setNewUser({ ...newUser, id_rol: parseInt(value) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar rol" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((r) => (
+                        <SelectItem key={r.id_rol} value={r.id_rol.toString()}>
+                          {r.nombre_rol}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  Crear Usuario
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-card-foreground">Total Usuarios</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <Users className="w-8 h-8 text-orange-600" />
+              <div>
+                <div className="text-3xl font-bold text-card-foreground">{users.length}</div>
+                <p className="text-muted-foreground text-sm">usuarios registrados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-card-foreground">Usuarios Activos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <Users className="w-8 h-8 text-green-600" />
+              <div>
+                <div className="text-3xl font-bold text-card-foreground">
+                  {users.filter(u => u.activo).length}
+                </div>
+                <p className="text-muted-foreground text-sm">activos</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-card-foreground">Roles</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <Users className="w-8 h-8 text-blue-600" />
+              <div>
+                <div className="text-3xl font-bold text-card-foreground">{roles.length}</div>
+                <p className="text-muted-foreground text-sm">roles disponibles</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filtros */}
+      <Card className="border-border bg-card">
+        <CardContent className="pt-6">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre o email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select 
+              value={selectedRole.toString()} 
+              onValueChange={(value: string) => setSelectedRole(parseInt(value))}
+            >
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="Filtrar por rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Todos los roles</SelectItem>
+                {roles.map((r) => (
+                  <SelectItem key={r.id_rol} value={r.id_rol.toString()}>
+                    {r.nombre_rol}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabla */}
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <CardTitle className="text-card-foreground">
+            Usuarios ({filteredUsers.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border">
+                  <TableHead className="text-card-foreground">ID</TableHead>
+                  <TableHead className="text-card-foreground">Nombre</TableHead>
+                  <TableHead className="text-card-foreground">Email</TableHead>
+                  <TableHead className="text-card-foreground">Teléfono</TableHead>
+                  <TableHead className="text-card-foreground">Rol</TableHead>
+                  <TableHead className="text-card-foreground">Estado</TableHead>
+                  <TableHead className="text-card-foreground">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((u) => (
+                  <TableRow key={u.id_usuario} className="border-border">
+                    <TableCell className="text-card-foreground">{u.id_usuario}</TableCell>
+                    <TableCell className="text-card-foreground font-medium">
+                      {u.nombre} {u.apellido}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                    <TableCell className="text-muted-foreground">{u.telefono || '-'}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {roles.find((r) => r.id_rol === u.id_rol)?.nombre_rol || '-'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={u.activo ? 'default' : 'secondary'}
+                        className={u.activo ? 'bg-green-600' : 'bg-gray-400'}
+                      >
+                        {u.activo ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" title="Editar">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="text-red-600 hover:bg-red-50"
+                          onClick={() => handleDelete(u.id_usuario)}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredUsers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      No se encontraron usuarios.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+export default UserManagement;
