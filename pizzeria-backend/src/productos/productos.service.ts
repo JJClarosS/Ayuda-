@@ -29,7 +29,7 @@ export class ProductosService {
         ...productoData,
         producto_tamanos: {
           create: producto_tamanos.map(tamano => ({
-            id_tamano: tamano.id_tamano,
+            //id_tamano: tamano.id_tamano,
             precio: tamano.precio, // Ahora es un número (Decimal)
             disponible: tamano.disponible,
             activo: tamano.activo ?? true, // Incluir activo con valor por defecto true

@@ -1,20 +1,25 @@
 // src/pedidos/dto/create-pedido.dto.ts
-import { IsInt, IsOptional, IsArray, ValidateNested, IsNumber, Min, IsString, IsEnum, ArrayMinSize } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsArray,
+  ValidateNested,
+  ArrayMinSize,
+  Min,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-
-export enum TipoPedido {
-  LOCAL = 'Local',
-  DOMICILIO = 'Domicilio',
-  PARA_LLEVAR = 'Para Llevar',
-}
+import { TipoPedido } from '../enums/pedido.enum';
 
 class DetallePedidoItem {
-  @IsInt()
-  id_producto_tamano!: number;  // ¡OBLIGATORIO → usa !
+  @IsInt({ message: 'id_producto_tamano debe ser un número entero' })
+  id_producto_tamano!: number;
 
-  @IsInt()
-  @Min(1)
-  cantidad!: number;            // ¡OBLIGATORIO → usa !
+  @IsInt({ message: 'cantidad debe ser un número entero' })
+  @Min(1, { message: 'cantidad debe ser mayor o igual a 1' })
+  cantidad!: number;
 
   @IsOptional()
   @IsString()
@@ -31,20 +36,19 @@ export class CreatePedidoDto {
   id_cliente?: number;
 
   @IsInt()
-  id_empleado!: number;         // ¡OBLIGATORIO → usa !
+  id_empleado!: number;
 
   @IsOptional()
   @IsInt()
   id_mesa?: number;
 
   @IsInt()
-  id_almacen!: number;          // ¡OBLIGATORIO → usa !
+  id_almacen!: number;
 
-  // ¡OBLIGATORIO en Prisma! Quita @IsOptional()
   @IsEnum(TipoPedido, {
-    message: 'tipo_pedido debe ser: Local, Domicilio o Para Llevar'
+    message: 'tipo_pedido debe ser: Local, Domicilio o Para Llevar',
   })
-  tipo_pedido!: TipoPedido;     // ¡OBLIGATORIO → usa !
+  tipo_pedido!: TipoPedido;
 
   @IsOptional()
   @IsNumber()
@@ -62,5 +66,5 @@ export class CreatePedidoDto {
   @ArrayMinSize(1, { message: 'Debe incluir al menos un producto' })
   @ValidateNested({ each: true })
   @Type(() => DetallePedidoItem)
-  detalle!: DetallePedidoItem[]; // ¡OBLIGATORIO → usa !
+  detalle!: DetallePedidoItem[];
 }

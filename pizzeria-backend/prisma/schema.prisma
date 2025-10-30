@@ -284,6 +284,21 @@ model pagos {
   pedidos      pedidos      @relation(fields: [id_pedido], references: [id_pedido], onDelete: NoAction, onUpdate: NoAction, map: "fk_pagos_pedidos")
 }
 
+enum TipoPedido {
+  Local
+  Domicilio
+  Para_Llevar
+}
+
+enum EstadoPedido {
+  Pendiente
+  En_Preparación
+  Listo
+  En_Camino
+  Entregado
+  Cancelado
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model pedidos {
   id_pedido         Int               @id(map: "pedidos_pk") @default(autoincrement())
