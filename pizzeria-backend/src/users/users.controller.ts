@@ -63,8 +63,8 @@ export class UsersController {
 
   // PATCH /users/change-password → usuario cambia SU contraseña
   @Patch('change-password')
-  @Roles('Cliente', 'Administrador')
-  //@Public()
+  //@Roles('Usuario', 'Administrador')
+  @Public()
   async changePassword(
     @GetUser('id') userId: number,
     @Body() dto: ChangePasswordDto,
