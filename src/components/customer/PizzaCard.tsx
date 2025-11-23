@@ -95,7 +95,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
             <div>
               <p className="text-orange-700">Desde</p>
               <p className="text-orange-900">
-                {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(getMinSizePrice())}
+                {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(getMinSizePrice())}
               </p>
             </div>
             <Button
@@ -145,7 +145,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
                     >
                       <p className="text-orange-900">{getSizeLabel(key)}</p>
                       <p className="text-orange-600">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(price || 0)}
+                        {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(price || 0)}
                       </p>
                     </button>
                   );
@@ -183,7 +183,7 @@ export function PizzaCard({ pizza, onAddToCart }: PizzaCardProps) {
               <div className="flex justify-between items-center">
                 <span className="text-orange-900">Total</span>
                 <span className="text-orange-900">
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(getCurrentPrice())}
+                  {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(getCurrentPrice())}
                 </span>
               </div>
             </div>

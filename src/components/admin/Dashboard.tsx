@@ -12,6 +12,18 @@ const ordersByStatus = [
   { name: 'En preparación', value: orders.filter(o => o.status === 'En preparación').length },
   { name: 'Entregado', value: orders.filter(o => o.status === 'Entregado').length }
 ];
+const BsIcon = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    width="20" 
+    height="20"
+    className="text-orange-600"
+    fill="currentColor"
+  >
+    <text x="4" y="17" fontSize="14" fontWeight="bold">Bs</text>
+  </svg>
+);
 
 export function Dashboard() {
   return (
@@ -40,10 +52,10 @@ export function Dashboard() {
         <Card className="border-orange-200 bg-white shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-orange-900">Ventas Hoy</CardTitle>
-            <DollarSign className="w-5 h-5 text-orange-600" />
+            <BsIcon/>
           </CardHeader>
           <CardContent>
-            <div className="text-orange-900">€{todayStats.totalSales.toFixed(2)}</div>
+            <div className="text-orange-900">Bs{todayStats.totalSales.toFixed(2)}</div>
             <p className="text-orange-600 flex items-center gap-1 mt-1">
               <TrendingUp className="w-4 h-4" />
               +8% vs ayer
@@ -139,7 +151,7 @@ export function Dashboard() {
                 <div key={order.id} className="flex items-center justify-between p-4 rounded-lg bg-orange-50 border border-orange-100">
                   <div>
                     <p className="text-orange-900">{order.customerName}</p>
-                    <p className="text-orange-600">{order.id} • €{order.total.toFixed(2)}</p>
+                    <p className="text-orange-600">{order.id} • Bs{order.total.toFixed(2)}</p>
                   </div>
                   <Badge 
                     variant={order.status === 'Entregado' ? 'default' : 'secondary'}

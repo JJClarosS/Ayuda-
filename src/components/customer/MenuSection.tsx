@@ -123,7 +123,7 @@ export function MenuSection({ onAddToCart, onAddDrinkToCart, onAddDessertToCart 
                   <p className="text-orange-600 mb-4">{drink.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-orange-900">
-                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(drink.price || 0)}
+                      {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(drink.price || 0)}
                     </span>
                     <Button
                       onClick={() => onAddDrinkToCart(drink.id)}
@@ -157,7 +157,7 @@ export function MenuSection({ onAddToCart, onAddDrinkToCart, onAddDessertToCart 
                   <p className="text-orange-600 mb-4">{dessert.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-orange-900">
-                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(dessert.price || 0)}
+                      {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(dessert.price || 0)}
                     </span>
                     <Button
                       onClick={() => onAddDessertToCart(dessert.id)}
